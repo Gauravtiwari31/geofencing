@@ -1,0 +1,98 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
+  <diagram name="Page-1" id="0e0id5T507fyc7q9SuR0">
+    <mxGraphModel dx="1213" dy="828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="trEYaT4EhbAJotJmZ4vN-1" target="trEYaT4EhbAJotJmZ4vN-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-1" value="TOURIST REGISTRATION &amp;amp; DIGITAL ID&lt;br&gt;- KYC + Itinerary Input&lt;br&gt;- Blockchain: Digital ID Issuance (hash/pointer only, no PII on-chain)&lt;div&gt;- ID Verify API (on-chain + off-chain)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="30" width="270" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="trEYaT4EhbAJotJmZ4vN-3" target="trEYaT4EhbAJotJmZ4vN-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-19" value="BLE → mobile relay (from app)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="trEYaT4EhbAJotJmZ4vN-17">
+          <mxGeometry x="-0.0291" y="-3" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-3" value="TOURIST MOBILE APP&lt;br&gt;&lt;br&gt;Login (Digital ID/OIDC)&lt;div&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;rounded=0;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="60" y="190" width="730" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-12" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="80" y="250" width="690" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-11" value="Offline store-and-forward + SMS fallback" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="trEYaT4EhbAJotJmZ4vN-12">
+          <mxGeometry x="582.6963792921449" width="107.30362070785517" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-5" value="Live Tracking (background)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="trEYaT4EhbAJotJmZ4vN-12">
+          <mxGeometry width="107.30362070785517" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-6" value="SOS Panic&amp;nbsp;Button" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="trEYaT4EhbAJotJmZ4vN-12">
+          <mxGeometry x="232.4911782003529" width="107.30362070785517" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-7" value="Geofencing&amp;nbsp;Alerts" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="trEYaT4EhbAJotJmZ4vN-12">
+          <mxGeometry x="116.24558910017645" width="107.30362070785517" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-8" value="Safety score display" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="trEYaT4EhbAJotJmZ4vN-12">
+          <mxGeometry x="348.7367673005293" width="107.30362070785517" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-9" value="Opt-in live sharing" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="trEYaT4EhbAJotJmZ4vN-12">
+          <mxGeometry x="464.9823564007058" width="107.30362070785517" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-13" value="&lt;div&gt;Device registry (maps deviceID ↔ touristID)&lt;/div&gt;&lt;div&gt;MQTT broker&lt;/div&gt;" style="whiteSpace=wrap;html=1;verticalAlign=middle;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="520" y="450" width="270" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="trEYaT4EhbAJotJmZ4vN-16" target="trEYaT4EhbAJotJmZ4vN-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-23" value="(BLE→Mobile)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="trEYaT4EhbAJotJmZ4vN-22">
+          <mxGeometry x="-0.1013" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-16" value="&lt;div&gt;SOS button&lt;/div&gt;&lt;div&gt;Vitals / accelerometer signals&lt;/div&gt;" style="whiteSpace=wrap;html=1;verticalAlign=middle;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="450" width="210" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="trEYaT4EhbAJotJmZ4vN-20" target="trEYaT4EhbAJotJmZ4vN-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-20" value="Wi-Fi → direct MQTT/HTTPS (to backend)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="520" y="378" width="250" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-36" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="trEYaT4EhbAJotJmZ4vN-24" target="trEYaT4EhbAJotJmZ4vN-35">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-24" value="BACKEND &amp;amp; AI&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;AuthN/AuthZ (Keycloak, RBAC, audit)&lt;/div&gt;&lt;div&gt;Ingestion API (REST / WebSocket / MQTT)&lt;/div&gt;&lt;div&gt;Queue / topic&lt;/div&gt;&lt;div&gt;Rules + ML scorer (inactivity, route deviation, geofence breach, vitals anomaly)&lt;/div&gt;&lt;div&gt;Alert processor / orchestrator&lt;/div&gt;&lt;div&gt;Notification service (FCM/APNs, SMS/e-mail, 112 handoff)&lt;/div&gt;&lt;div&gt;E-FIR generator (PDF)&lt;/div&gt;&lt;div&gt;Risk-zone store &amp;amp; editor&lt;/div&gt;&lt;div&gt;Consent &amp;amp; retention policy&lt;/div&gt;&lt;div&gt;Observability (logs, metrics, tracing)&lt;/div&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="60" y="620" width="730" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-29" value="&#xa;Time-series store (Timescale / ClickHouse)&#xa;&#xa;" style="whiteSpace=wrap;html=1;verticalAlign=top;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1010" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-32" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;Operational DB (Postgres + PostGIS)" style="whiteSpace=wrap;html=1;verticalAlign=top;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1010" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-33" value="&#xa;Object store (KYC scans, E-FIR files)&#xa;&#xa;" style="whiteSpace=wrap;html=1;verticalAlign=top;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="1010" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="trEYaT4EhbAJotJmZ4vN-35" target="trEYaT4EhbAJotJmZ4vN-32">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="trEYaT4EhbAJotJmZ4vN-35" target="trEYaT4EhbAJotJmZ4vN-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="trEYaT4EhbAJotJmZ4vN-35" target="trEYaT4EhbAJotJmZ4vN-33">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-35" value="Object Stores" style="whiteSpace=wrap;html=1;verticalAlign=top;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="365" y="910" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="trEYaT4EhbAJotJmZ4vN-41" value="Authority Dashboard&lt;br&gt;&lt;br&gt;&lt;div&gt;Secure login (RBAC)&lt;/div&gt;&lt;div&gt;Live tourist map + heatmaps&lt;/div&gt;&lt;div&gt;Alert / incident panel (acknowledge / resolve)&lt;/div&gt;&lt;div&gt;Tourist profile + ID verify&lt;/div&gt;&lt;div&gt;Geofence editor&lt;/div&gt;&lt;div&gt;Analytics / reports&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="1120" width="330" height="170" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
