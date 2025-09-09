@@ -55,13 +55,37 @@ def keyboard(key, x, y):
     glutPostRedisplay()  # Redraw the scene with updated mirror point
 
 def main():
-    global mirror_point  # Ensure global variable can be modified
+    global point, mirror_point, mirror_axis
+
+    # Take input from keyboard as specified in lab requirements
+    try:
+        x_input = float(input("Enter x-coordinate of point P: "))
+        y_input = float(input("Enter y-coordinate of point P: "))
+        point = (x_input, y_input)
+
+        axis_input = input("Enter mirror axis (X or Y): ").strip().upper()
+        if axis_input == 'X':
+            mirror_axis = 'X'
+            mirror_point = (point[0], -point[1])
+        elif axis_input == 'Y':
+            mirror_axis = 'Y'
+            mirror_point = (-point[0], point[1])
+        else:
+            print("Invalid axis. Using X-axis as default.")
+            mirror_axis = 'X'
+            mirror_point = (point[0], -point[1])
+
+    except ValueError:
+        print("Invalid input. Using default values: P(1,2) with X-axis mirror.")
+        point = (1, 2)
+        mirror_axis = 'X'
+        mirror_point = (1, -2)
 
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB)
     glutInitWindowSize(400, 400)
     glutInitWindowPosition(100, 100)
-    glutCreateWindow(b"Mirror Image using PyOpenGL")  # Ensure the title is a byte string
+    glutCreateWindow(b"Mirror Image of Point P - Interactive")  # Updated title
 
     glClearColor(1.0, 1.0, 1.0, 1.0)  # White background
     gluOrtho2D(-10, 10, -10, 10)  # Set the coordinate system

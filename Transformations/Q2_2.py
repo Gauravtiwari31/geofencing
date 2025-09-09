@@ -21,21 +21,25 @@ def plot_points():
     glColor3f(0.0, 1.0, 0.0)  # Set drawing color to green
 
     if line_type == "horizontal":
-        glBegin(GL_LINES)
-        glVertex2f(x_start, y_start)
-        glVertex2f(x_end, y_start)
+        glPointSize(5.0)
+        glBegin(GL_POINTS)
+        for x in range(int(min(x_start, x_end)), int(max(x_start, x_end)) + 1):
+            glVertex2f(x, y_start)
         glEnd()
-    
+
     elif line_type == "vertical":
-        glBegin(GL_LINES)
-        glVertex2f(x_start, y_start)
-        glVertex2f(x_start, y_end)
+        glPointSize(5.0)
+        glBegin(GL_POINTS)
+        for y in range(int(min(y_start, y_end)), int(max(y_start, y_end)) + 1):
+            glVertex2f(x_start, y)
         glEnd()
     
     elif line_type == "diagonal":
-        glBegin(GL_LINES)
-        glVertex2f(x_start, y_start)
-        glVertex2f(x_end, y_end)
+        # Draw individual points along the diagonal: (5,5), (6,6), ..., (10,10)
+        glPointSize(5.0)
+        glBegin(GL_POINTS)
+        for i in range(int(x_start), int(x_end) + 1):
+            glVertex2f(i, i)
         glEnd()
     
     glFlush()  # Ensure all OpenGL commands are executed
@@ -59,10 +63,18 @@ def main():
         x_end = x_start  # For vertical lines, x_start and x_end are the same
 
     elif line_type == "diagonal":
-        x_start = float(input("Enter X-coordinate start: "))
-        y_start = float(input("Enter Y-coordinate start: "))
-        x_end = float(input("Enter X-coordinate end: "))
-        y_end = float(input("Enter Y-coordinate end: "))
+        # For diagonal lines, take input as "start_value, end_value" and plot (start,start)...(end,end)
+        diagonal_input = input("Enter diagonal line range (e.g., 5, 10): ")
+        try:
+            start_val, end_val = map(int, diagonal_input.split(','))
+            x_start = start_val
+            y_start = start_val
+            x_end = end_val
+            y_end = end_val
+        except ValueError:
+            print("Invalid input format. Using default 5,10")
+            x_start, y_start = 5, 5
+            x_end, y_end = 10, 10
 
     glutInit()  # Initialize GLUT
     glutInitDisplayMode(GLUT_RGB)  # Set display mode

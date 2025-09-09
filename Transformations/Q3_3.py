@@ -10,9 +10,8 @@ square_size = 1.0                   # Default size
 
 def clear_screen():
     glClearColor(*background_color, 1.0)  # Set background color
-    # Adjust the coordinate system based on square size
-    half_size = square_size / 2.0
-    gluOrtho2D(-half_size - 1, half_size + 1, -half_size - 1, half_size + 1)  # Set coordinate system
+    # Set coordinate system to show the square properly
+    gluOrtho2D(-10.0, 10.0, -10.0, 10.0)  # Set coordinate system
 
 def plot_points():
     glClear(GL_COLOR_BUFFER_BIT)  # Clear the color buffer
@@ -38,19 +37,35 @@ def main():
     
     # Input from the user
     try:
-        bg_color_input = input("Enter the background color (R G B) in the range [0.0, 1.0]: ").split()
-        background_color = tuple(map(float, bg_color_input))
-        
-        sq_color_input = input("Enter the square color (R G B) in the range [0.0, 1.0]: ").split()
-        square_color = tuple(map(float, sq_color_input))
-        
-        center_input = input("Enter the center of the square (X Y): ").split()
-        square_center = tuple(map(float, center_input))
-        
+        print("Enter colors as three values separated by spaces (e.g., 0.5 0.5 0.5)")
+        bg_color_input = input("Enter the background color (R G B) in the range [0.0, 1.0]: ").strip().split()
+        if len(bg_color_input) == 3:
+            background_color = tuple(map(float, bg_color_input))
+        else:
+            raise ValueError("Need exactly 3 color values")
+
+        sq_color_input = input("Enter the square color (R G B) in the range [0.0, 1.0]: ").strip().split()
+        if len(sq_color_input) == 3:
+            square_color = tuple(map(float, sq_color_input))
+        else:
+            raise ValueError("Need exactly 3 color values")
+
+        center_input = input("Enter the center of the square (X Y): ").strip().split()
+        if len(center_input) == 2:
+            square_center = tuple(map(float, center_input))
+        else:
+            raise ValueError("Need exactly 2 coordinates")
+
         square_size = float(input("Enter the size of the square (positive number): "))
-        
-    except ValueError:
-        print("Invalid input. Using default values.")
+        if square_size <= 0:
+            raise ValueError("Size must be positive")
+
+    except (ValueError, IndexError) as e:
+        print(f"Invalid input: {e}. Using default values.")
+        background_color = (0.0, 0.0, 0.0)  # Black
+        square_color = (1.0, 0.0, 0.0)      # Red
+        square_center = (0.0, 0.0)          # Center
+        square_size = 2.0                   # Reasonable size
     
     glutInit()  # Initialize GLUT
     glutInitDisplayMode(GLUT_RGB)  # Set display mode
