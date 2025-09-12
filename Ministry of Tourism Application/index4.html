@@ -26,9 +26,6 @@
                     },
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'gradient-move': 'gradientMove 15s ease infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-sos': 'pulse-sos 2s infinite'
                     }
                 }
             }
@@ -41,95 +38,72 @@
             box-sizing: border-box;
             font-family: 'Poppins', sans-serif;
         }
-        
+
         :root {
             --bg-primary: #0f172a;
             --bg-secondary: #1e293b;
-            --bg-tertiary: #334155;
             --text-primary: #f8fafc;
             --text-secondary: #cbd5e1;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --card-bg: rgba(15, 23, 42, 0.8);
-            --nav-bg: rgba(15, 23, 42, 0.9);
+            --card-bg: rgba(15, 23, 42, 0.7);
         }
-        
+
         .light-mode {
-            --bg-primary: #ffffff;
+            --bg-primary: #fdfdfd;
             --bg-secondary: #f1f5f9;
-            --bg-tertiary: #e2e8f0;
-            --text-primary: #1e293b;
-            --text-secondary: #475569;
-            --border-color: rgba(15, 23, 42, 0.1);
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --nav-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #111827;
+            --text-secondary: #374151;
+            --card-bg: rgba(255, 255, 255, 0.85);
         }
-        
+
         body {
             overflow-x: hidden;
-            background: var(--bg-primary);
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #dbeafe 100%);
             color: var(--text-primary);
             min-height: 100vh;
-            transition: all 0.5s ease;
-            position: relative;
+            transition: background 0.5s ease, color 0.5s ease;
         }
-        
-        /* Moving Background - Dark Mode */
+
         .moving-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -2;
-            opacity: 0.4;
+            z-index: -1;
+            opacity: 0.3;
             background: linear-gradient(125deg, #2563eb 0%, #8b5cf6 50%, #ec4899 100%);
             background-size: 400% 400%;
             animation: gradientMove 15s ease infinite;
-            transition: opacity 0.5s ease;
         }
-        
-        /* Moving Background - Light Mode */
+
         .light-mode .moving-bg {
-            opacity: 0.15;
             background: linear-gradient(125deg, #3b82f6 0%, #a855f7 50%, #f472b6 100%);
+            background-size: 400% 400%;
         }
-        
-        /* Background overlay for better readability */
-        .bg-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-            transition: background 0.5s ease;
-        }
-        
+
         @keyframes gradientMove {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        
+
         .card-hover {
             transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             background: var(--card-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(10px);
         }
-        
+
+        .light-mode .card-hover {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
         .card-hover:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
             border-color: rgba(59, 130, 246, 0.5);
         }
-        
-        .light-mode .card-hover:hover {
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.25);
-        }
-        
+
         .feature-icon {
             display: inline-flex;
             align-items: center;
@@ -141,22 +115,13 @@
             margin-bottom: 1rem;
             transition: all 0.3s ease;
         }
-        
-        .light-mode .feature-icon {
-            background: linear-gradient(135deg, #3b82f6 0%, #a855f7 100%);
-        }
-        
+
         .nav-link {
             position: relative;
             padding: 0.5rem 1rem;
             transition: all 0.3s ease;
-            color: var(--text-secondary);
         }
-        
-        .nav-link:hover {
-            color: var(--text-primary);
-        }
-        
+
         .nav-link::after {
             content: '';
             position: absolute;
@@ -167,215 +132,63 @@
             background: linear-gradient(90deg, #2563eb, #ec4899);
             transition: width 0.3s ease;
         }
-        
+
         .nav-link:hover::after {
             width: 100%;
         }
-        
+
         .floating {
             animation: float 6s ease-in-out infinite;
         }
-        
+
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-20px); }
             100% { transform: translateY(0px); }
         }
-        
+
         .sos-button {
             animation: pulse-sos 2s infinite;
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
         }
-        
+
         @keyframes pulse-sos {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        
-        /* Navigation styling */
-        nav {
-            background: var(--nav-bg);
-            border-bottom: 1px solid var(--border-color);
+
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
         }
-        
-        /* Map container styling */
-        #map {
-            height: 500px;
-            width: 100%;
-            border-radius: 0.75rem;
-            z-index: 1;
-        }
-        
-        /* Modal styling */
-        .modal {
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            transform: scale(0.9);
-            opacity: 0;
-        }
-        
-        .modal.active {
-            transform: scale(1);
-            opacity: 1;
-        }
-        
-        /* Loading screen - Fixed centering */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: var(--bg-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-        
-        .loading-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(37, 99, 235, 0.2);
-            border-radius: 50%;
-            border-top: 5px solid #2563eb;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1rem;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2563eb, #8b5cf6);
-            opacity: 0.6;
-            animation: float 8s infinite ease-in-out;
-            pointer-events: none;
-        }
-        
-        .light-mode .particle {
-            background: linear-gradient(135deg, #3b82f6, #a855f7);
-            opacity: 0.4;
-        }
-        
+
         .theme-toggle {
             transition: all 0.3s ease;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
         }
-        
+
         .theme-toggle:hover {
             transform: rotate(30deg);
-        }
-        
-        /* Light mode specific fixes */
-        .light-mode .bg-dark {
-            background-color: var(--bg-secondary) !important;
-        }
-        
-        .light-mode .text-gray-300,
-        .light-mode .text-gray-400 {
-            color: var(--text-secondary) !important;
-        }
-        
-        .light-mode .border-gray-700 {
-            border-color: var(--border-color) !important;
-        }
-        
-        .light-mode .border-gray-800 {
-            border-color: var(--border-color) !important;
-        }
-        
-        /* Form inputs in light mode */
-        .light-mode input,
-        .light-mode select,
-        .light-mode textarea {
-            background-color: var(--bg-primary) !important;
-            color: var(--text-primary) !important;
-            border-color: var(--border-color) !important;
-        }
-        
-        .light-mode input:focus,
-        .light-mode select:focus,
-        .light-mode textarea:focus {
-            border-color: #2563eb !important;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
-        }
-        
-        /* Section backgrounds */
-        .section-bg {
-            background: rgba(15, 23, 42, 0.3);
-        }
-        
-        .light-mode .section-bg {
-            background: rgba(241, 245, 249, 0.7);
-        }
-        
-        /* Gradient text fix for light mode */
-        .light-mode .bg-clip-text {
-            background: linear-gradient(90deg, #2563eb, #ec4899) !important;
-            -webkit-background-clip: text !important;
-            background-clip: text !important;
-        }
-        
-        /* Button hover states for light mode */
-        .light-mode .hover\:bg-gray-600:hover {
-            background-color: var(--bg-tertiary) !important;
-        }
-        
-        .light-mode .hover\:bg-gray-700:hover {
-            background-color: var(--bg-secondary) !important;
-        }
-        
-        /* Stats cards in light mode */
-        .light-mode .bg-gray-700 {
-            background-color: var(--bg-tertiary) !important;
-        }
-        
-        /* Responsive improvements */
-        @media (max-width: 768px) {
-            .loading-content h2 {
-                font-size: 1.5rem;
-            }
-            
-            .loading-content p {
-                font-size: 0.875rem;
-            }
         }
     </style>
 </head>
 <body class="antialiased">
     <!-- Loading Screen -->
     <div class="loading-screen" id="loadingScreen">
-        <div class="loading-content">
-            <div class="loader"></div>
-            <h2 class="text-xl font-semibold" style="color: var(--text-primary);">TravelGuard</h2>
-            <p class="mt-2" style="color: var(--text-secondary);">Loading your safety experience...</p>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+            <div class="loader mb-4"></div>
+            <h2 class="text-xl font-semibold">TravelGuard</h2>
+            <p class="text-gray-400 mt-2">Loading your safety experience...</p>
         </div>
     </div>
     
     <!-- Moving Background -->
     <div class="moving-bg"></div>
-    <div class="bg-overlay"></div>
     
     <!-- Floating Particles -->
     <div id="particles-container"></div>
     
     <!-- Navigation -->
-    <nav class="fixed w-full z-50 backdrop-filter backdrop-blur-lg py-4 px-6">
+    <nav class="w-full z-50 bg-opacity-90 bg-dark backdrop-filter backdrop-blur-lg py-4 px-6 border-b border-gray-700">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
@@ -394,13 +207,13 @@
             </div>
             
             <div class="flex items-center space-x-4">
-                <button id="themeToggle" class="theme-toggle p-2 rounded-full">
+                <button id="themeToggle" class="theme-toggle p-2 rounded-full bg-dark bg-opacity-50">
                     <i class="bi bi-sun-fill text-yellow-400 hidden dark-mode-icon"></i>
-                    <i class="bi bi-moon-fill text-gray-500 light-mode-icon"></i>
+                    <i class="bi bi-moon-fill text-gray-300 light-mode-icon"></i>
                 </button>
-                <button id="loginButton" class="px-4 py-2 bg-primary hover:bg-blue-700 rounded-lg transition duration-300 text-white">Login</button>
-                <button class="md:hidden">
-                    <i class="bi bi-list text-2xl" style="color: var(--text-primary);"></i>
+                <button id="loginButton" class="px-4 py-2 bg-primary hover:bg-blue-700 rounded-lg transition duration-300">Login</button>
+                <button class="md:hidden text-white">
+                    <i class="bi bi-list text-2xl"></i>
                 </button>
             </div>
         </div>
@@ -413,14 +226,14 @@
                 <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">
                     Enhancing Tourist Safety with <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Blockchain & AI</span>
                 </h1>
-                <p class="text-lg mb-8" style="color: var(--text-secondary);">
+                <p class="text-lg text-gray-300 mb-8">
                     A comprehensive solution for tourist registration, real-time monitoring, and emergency response. Ensuring safer travels across India.
                 </p>
                 <div class="flex flex-wrap gap-4">
-                    <button class="px-6 py-3 bg-primary hover:bg-blue-700 rounded-lg font-medium transition duration-300 flex items-center text-white">
+                    <button class="px-6 py-3 bg-primary hover:bg-blue-700 rounded-lg font-medium transition duration-300 flex items-center">
                         <i class="bi bi-phone-fill mr-2"></i> Download App
                     </button>
-                    <button class="px-6 py-3 bg-transparent border rounded-lg font-medium transition duration-300" style="border-color: var(--border-color); color: var(--text-primary);">
+                    <button class="px-6 py-3 bg-dark border border-gray-700 hover:border-primary rounded-lg font-medium transition duration-300">
                         Authority Login
                     </button>
                 </div>
@@ -431,9 +244,9 @@
                     <div class="absolute -top-10 -left-10 w-40 h-40 bg-primary rounded-full opacity-20 animate-pulse-slow"></div>
                     <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-accent rounded-full opacity-20 animate-pulse-slow"></div>
                     
-                    <div class="relative card-hover rounded-2xl p-6">
+                    <div class="relative bg-dark bg-opacity-70 backdrop-filter backdrop-blur-lg rounded-2xl p-6 border border-gray-700 card-hover">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-semibold" style="color: var(--text-primary);">Tourist Safety Dashboard</h3>
+                            <h3 class="text-xl font-semibold">Tourist Safety Dashboard</h3>
                             <div class="flex items-center text-green-500">
                                 <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
                                 <span class="text-sm">Online</span>
@@ -442,26 +255,26 @@
                         
                         <div class="mb-6">
                             <div class="flex justify-between items-center mb-2">
-                                <span style="color: var(--text-secondary);">Safety Score</span>
+                                <span class="text-gray-400">Safety Score</span>
                                 <span class="text-primary font-bold">0%</span>
                             </div>
-                            <div class="w-full rounded-full h-2.5" style="background-color: var(--bg-tertiary);">
+                            <div class="w-full bg-gray-700 rounded-full h-2.5">
                                 <div class="bg-primary h-2.5 rounded-full" style="width: 0%"></div>
                             </div>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div class="p-4 rounded-lg text-center" style="background-color: var(--bg-secondary);">
+                            <div class="bg-dark bg-opacity-50 p-4 rounded-lg text-center">
                                 <i class="bi bi-geo-alt-fill text-primary text-2xl mb-2"></i>
-                                <p class="text-sm" style="color: var(--text-secondary);">Live Location</p>
+                                <p class="text-sm">Live Location</p>
                             </div>
-                            <div class="p-4 rounded-lg text-center" style="background-color: var(--bg-secondary);">
+                            <div class="bg-dark bg-opacity-50 p-4 rounded-lg text-center">
                                 <i class="bi bi-shield-check text-primary text-2xl mb-2"></i>
-                                <p class="text-sm" style="color: var(--text-secondary);">Geo-fencing</p>
+                                <p class="text-sm">Geo-fencing</p>
                             </div>
                         </div>
                         
-                        <button class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition duration-300 flex items-center justify-center sos-button text-white">
+                        <button class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition duration-300 flex items-center justify-center sos-button">
                             <i class="bi bi-exclamation-triangle-fill mr-2"></i> SOS Emergency
                         </button>
                     </div>
@@ -471,48 +284,48 @@
     </section>
     
     <!-- Features Section -->
-    <section id="features" class="py-20 px-6 section-bg">
+    <section id="features" class="py-20 px-6 bg-dark bg-opacity-50">
         <div class="container mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">How <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">TravelGuard</span> Works</h2>
-                <p class="max-w-3xl mx-auto" style="color: var(--text-secondary);">Our comprehensive system ensures tourist safety through advanced technology and real-time monitoring</p>
+                <p class="text-gray-400 max-w-3xl mx-auto">Our comprehensive system ensures tourist safety through advanced technology and real-time monitoring</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <!-- Feature 1 -->
-                <div class="card-hover rounded-xl p-6 text-center">
+                <div class="bg-dark bg-opacity-70 backdrop-filter backdrop-blur-lg rounded-xl p-6 card-hover text-center">
                     <div class="feature-icon mx-auto">
                         <i class="bi bi-person-badge text-white text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3" style="color: var(--text-primary);">Tourist Registration & KYC</h3>
-                    <p style="color: var(--text-secondary);">Secure registration process with verified identification and itinerary details.</p>
+                    <h3 class="text-xl font-semibold mb-3">Tourist Registration & KYC</h3>
+                    <p class="text-gray-400">Secure registration process with verified identification and itinerary details.</p>
                 </div>
                 
                 <!-- Feature 2 -->
-                <div class="card-hover rounded-xl p-6 text-center">
+                <div class="bg-dark bg-opacity-70 backdrop-filter backdrop-blur-lg rounded-xl p-6 card-hover text-center">
                     <div class="feature-icon mx-auto">
                         <i class="bi bi-blockchain text-white text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3" style="color: var(--text-primary);">Blockchain Digital ID</h3>
-                    <p style="color: var(--text-secondary);">Tamper-proof digital identity issuance using blockchain technology.</p>
+                    <h3 class="text-xl font-semibold mb-3">Blockchain Digital ID</h3>
+                    <p class="text-gray-400">Tamper-proof digital identity issuance using blockchain technology.</p>
                 </div>
                 
                 <!-- Feature 3 -->
-                <div class="card-hover rounded-xl p-6 text-center">
+                <div class="bg-dark bg-opacity-70 backdrop-filter backdrop-blur-lg rounded-xl p-6 card-hover text-center">
                     <div class="feature-icon mx-auto">
                         <i class="bi bi-phone text-white text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3" style="color: var(--text-primary);">Mobile App & IoT Wearable</h3>
-                    <p style="color: var(--text-secondary);">Real-time monitoring through mobile app and IoT wearable devices.</p>
+                    <h3 class="text-xl font-semibold mb-3">Mobile App & IoT Wearable</h3>
+                    <p class="text-gray-400">Real-time monitoring through mobile app and IoT wearable devices.</p>
                 </div>
                 
                 <!-- Feature 4 -->
-                <div class="card-hover rounded-xl p-6 text-center">
+                <div class="bg-dark bg-opacity-70 backdrop-filter backdrop-blur-lg rounded-xl p-6 card-hover text-center">
                     <div class="feature-icon mx-auto">
                         <i class="bi bi-speedometer2 text-white text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3" style="color: var(--text-primary);">AI-Powered Monitoring</h3>
-                    <p style="color: var(--text-secondary);">Advanced anomaly detection for movement deviations and emergencies.</p>
+                    <h3 class="text-xl font-semibold mb-3">AI-Powered Monitoring</h3>
+                    <p class="text-gray-400">Advanced anomaly detection for movement deviations and emergencies.</p>
                 </div>
             </div>
         </div>
@@ -523,24 +336,24 @@
         <div class="container mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">Authority <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Dashboard</span></h2>
-                <p class="max-w-3xl mx-auto" style="color: var(--text-secondary);">Real-time monitoring and management system for authorities</p>
+                <p class="text-gray-400 max-w-3xl mx-auto">Real-time monitoring and management system for authorities</p>
             </div>
             
-            <div class="card-hover rounded-2xl p-6">
+            <div class="bg-dark bg-opacity-70 backdrop-filter backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
                 <div class="flex flex-wrap mb-6">
                     <div class="w-full md:w-1/3 pr-0 md:pr-4 mb-6 md:mb-0">
-                        <h3 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">Live Tourist Map</h3>
-                        <div class="rounded-xl p-4 h-64 flex items-center justify-center" style="background-color: var(--bg-secondary);">
+                        <h3 class="text-xl font-semibold mb-4">Live Tourist Map</h3>
+                        <div class="bg-dark bg-opacity-50 rounded-xl p-4 h-64 flex items-center justify-center">
                             <div class="text-center">
                                 <i class="bi bi-geo text-4xl text-primary mb-3"></i>
-                                <p style="color: var(--text-secondary);">Interactive map showing tourist locations</p>
+                                <p>Interactive map showing tourist locations</p>
                             </div>
                         </div>
                     </div>
                     
                     <div class="w-full md:w-2/3">
-                        <h3 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">Alert & Incident Panel</h3>
-                        <div class="rounded-xl p-4" style="background-color: var(--bg-secondary);">
+                        <h3 class="text-xl font-semibold mb-4">Alert & Incident Panel</h3>
+                        <div class="bg-dark bg-opacity-50 rounded-xl p-4">
                             <div class="flex justify-between items-center mb-4">
                                 <div class="flex space-x-2">
                                     <span class="px-3 py-1 bg-primary bg-opacity-20 text-primary rounded-full text-sm">Active: 0</span>
@@ -552,13 +365,13 @@
                             </div>
                             
                             <div class="space-y-4">
-                                <div class="flex items-center p-3 border-l-4 rounded" style="background-color: var(--bg-tertiary); border-color: var(--border-color);">
-                                    <div class="mr-3" style="color: var(--text-secondary);">
+                                <div class="flex items-center p-3 bg-gray-700 bg-opacity-50 border-l-4 border-gray-600 rounded">
+                                    <div class="mr-3 text-gray-500">
                                         <i class="bi bi-info-circle"></i>
                                     </div>
                                     <div>
-                                        <p class="font-medium" style="color: var(--text-primary);">No active alerts</p>
-                                        <p class="text-sm" style="color: var(--text-secondary);">System is monitoring for incidents</p>
+                                        <p class="font-medium">No active alerts</p>
+                                        <p class="text-sm text-gray-400">System is monitoring for incidents</p>
                                     </div>
                                 </div>
                             </div>
@@ -567,31 +380,31 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                    <div class="p-4 rounded-xl" style="background-color: var(--bg-secondary);">
+                    <div class="bg-dark bg-opacity-50 p-4 rounded-xl">
                         <div class="flex justify-between items-center mb-2">
-                            <h4 class="font-medium" style="color: var(--text-primary);">Registered Tourists</h4>
+                            <h4 class="font-medium">Registered Tourists</h4>
                             <i class="bi bi-people text-primary"></i>
                         </div>
-                        <p class="text-3xl font-bold" style="color: var(--text-primary);">0</p>
-                        <p class="text-sm" style="color: var(--text-secondary);">No registrations yet</p>
+                        <p class="text-3xl font-bold">0</p>
+                        <p class="text-gray-500 text-sm">No registrations yet</p>
                     </div>
                     
-                    <div class="p-4 rounded-xl" style="background-color: var(--bg-secondary);">
+                    <div class="bg-dark bg-opacity-50 p-4 rounded-xl">
                         <div class="flex justify-between items-center mb-2">
-                            <h4 class="font-medium" style="color: var(--text-primary);">Active Incidents</h4>
+                            <h4 class="font-medium">Active Incidents</h4>
                             <i class="bi bi-exclamation-triangle text-yellow-500"></i>
                         </div>
-                        <p class="text-3xl font-bold" style="color: var(--text-primary);">0</p>
-                        <p class="text-sm" style="color: var(--text-secondary);">No incidents reported</p>
+                        <p class="text-3xl font-bold">0</p>
+                        <p class="text-gray-400 text-sm">No incidents reported</p>
                     </div>
                     
-                    <div class="p-4 rounded-xl" style="background-color: var(--bg-secondary);">
+                    <div class="bg-dark bg-opacity-50 p-4 rounded-xl">
                         <div class="flex justify-between items-center mb-2">
-                            <h4 class="font-medium" style="color: var(--text-primary);">Avg Response Time</h4>
+                            <h4 class="font-medium">Avg Response Time</h4>
                             <i class="bi bi-clock-history text-blue-500"></i>
                         </div>
-                        <p class="text-3xl font-bold" style="color: var(--text-primary);">0<span class="text-lg">min</span></p>
-                        <p class="text-sm" style="color: var(--text-secondary);">No response data available</p>
+                        <p class="text-3xl font-bold">0<span class="text-lg">min</span></p>
+                        <p class="text-gray-400 text-sm">No response data available</p>
                     </div>
                 </div>
             </div>
@@ -599,39 +412,39 @@
     </section>
     
     <!-- Interactive Map Section -->
-    <section id="map-section" class="py-20 px-6 section-bg">
+    <section id="map-section" class="py-20 px-6 bg-dark bg-opacity-50">
         <div class="container mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">Interactive <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Live Map</span></h2>
-                <p class="max-w-3xl mx-auto" style="color: var(--text-secondary);">Real-time tracking of tourists with detailed location information</p>
+                <p class="text-gray-400 max-w-3xl mx-auto">Real-time tracking of tourists with detailed location information</p>
             </div>
             
-            <div class="card-hover rounded-2xl p-6">
+            <div class="bg-dark bg-opacity-70 backdrop-filter backdrop-blur-lg rounded-2xl p-6 border border-gray-700">
                 <div class="flex flex-wrap mb-6">
                     <div class="w-full md:w-1/4 pr-0 md:pr-4 mb-6 md:mb-0">
-                        <h3 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">Map Controls</h3>
-                        <div class="rounded-xl p-4" style="background-color: var(--bg-secondary);">
+                        <h3 class="text-xl font-semibold mb-4">Map Controls</h3>
+                        <div class="bg-dark bg-opacity-50 rounded-xl p-4">
                             <div class="mb-4">
-                                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Tourist Status</label>
+                                <label class="block text-gray-400 text-sm mb-2">Tourist Status</label>
                                 <div class="space-y-2">
                                     <div class="flex items-center">
                                         <input type="checkbox" id="safeCheckbox" checked class="mr-2 h-4 w-4 text-primary">
-                                        <label for="safeCheckbox" class="text-sm" style="color: var(--text-primary);">Safe</label>
+                                        <label for="safeCheckbox" class="text-sm text-gray-300">Safe</label>
                                     </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="warningCheckbox" checked class="mr-2 h-4 w-4 text-yellow-500">
-                                        <label for="warningCheckbox" class="text-sm" style="color: var(--text-primary);">Warning</label>
+                                        <label for="warningCheckbox" class="text-sm text-gray-300">Warning</label>
                                     </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="dangerCheckbox" checked class="mr-2 h-4 w-4 text-red-500">
-                                        <label for="dangerCheckbox" class="text-sm" style="color: var(--text-primary);">Danger</label>
+                                        <label for="dangerCheckbox" class="text-sm text-gray-300">Danger</label>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="mb-4">
-                                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Map Style</label>
-                                <select id="mapStyleSelector" class="w-full rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary text-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                <label class="block text-gray-400 text-sm mb-2">Map Style</label>
+                                <select id="mapStyleSelector" class="w-full bg-dark border border-gray-700 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary text-sm">
                                     <option value="streets">Standard</option>
                                     <option value="satellite">Satellite</option>
                                     <option value="terrain">Terrain</option>
@@ -640,8 +453,8 @@
                             </div>
                             
                             <div>
-                                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Time Range</label>
-                                <select class="w-full rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary text-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                <label class="block text-gray-400 text-sm mb-2">Time Range</label>
+                                <select class="w-full bg-dark border border-gray-700 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary text-sm">
                                     <option>Last 1 hour</option>
                                     <option selected>Last 6 hours</option>
                                     <option>Last 24 hours</option>
@@ -653,7 +466,7 @@
                     
                     <div class="w-full md:w-3/4">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold" style="color: var(--text-primary);">Live Tourist Tracking</h3>
+                            <h3 class="text-xl font-semibold">Live Tourist Tracking</h3>
                             <div class="flex space-x-2">
                                 <button class="px-3 py-1 bg-primary bg-opacity-20 text-primary rounded-full text-sm flex items-center">
                                     <i class="bi bi-people-fill mr-1"></i> 0 tourists online
@@ -668,31 +481,31 @@
     </section>
     
     <!-- Registration Section -->
-    <section id="registration" class="py-20 px-6">
+    <section id="registration" class="py-20 px-6 bg-dark bg-opacity-50">
         <div class="container mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">Tourist <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Registration</span></h2>
-                <p class="max-w-3xl mx-auto" style="color: var(--text-secondary);">Register once and travel safely across India with your blockchain digital ID</p>
+                <p class="text-gray-400 max-w-3xl mx-auto">Register once and travel safely across India with your blockchain digital ID</p>
             </div>
             
-            <div class="max-w-3xl mx-auto card-hover rounded-2xl p-8">
+            <div class="max-w-3xl mx-auto bg-dark bg-opacity-70 backdrop-filter backdrop-blur-lg rounded-2xl p-8 border border-gray-700">
                 <div class="mb-6">
-                    <h3 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">KYC & Itinerary Details</h3>
+                    <h3 class="text-xl font-semibold mb-4">KYC & Itinerary Details</h3>
                     
-                    <div class="p-4 rounded-xl mb-6" style="background-color: var(--bg-secondary);">
+                    <div class="bg-dark bg-opacity-50 p-4 rounded-xl mb-6">
                         <div class="flex items-center mb-4">
                             <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white mr-3">1</div>
-                            <h4 class="font-medium" style="color: var(--text-primary);">Personal Information</h4>
+                            <h4 class="font-medium">Personal Information</h4>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Full Name</label>
-                                <input type="text" class="w-full rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                <label class="block text-gray-400 text-sm mb-2">Full Name</label>
+                                <input type="text" class="w-full bg-dark border border-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary">
                             </div>
                             <div>
-                                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Nationality</label>
-                                <select class="w-full rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                <label class="block text-gray-400 text-sm mb-2">Nationality</label>
+                                <select class="w-full bg-dark border border-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary">
                                     <option>Select Country</option>
                                     <option>United States</option>
                                     <option>United Kingdom</option>
@@ -702,34 +515,34 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Passport Number</label>
-                                <input type="text" class="w-full rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                <label class="block text-gray-400 text-sm mb-2">Passport Number</label>
+                                <input type="text" class="w-full bg-dark border border-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary">
                             </div>
                             <div>
-                                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Date of Birth</label>
-                                <input type="date" class="w-full rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                <label class="block text-gray-400 text-sm mb-2">Date of Birth</label>
+                                <input type="date" class="w-full bg-dark border border-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary">
                             </div>
                         </div>
                     </div>
                     
-                    <div class="p-4 rounded-xl" style="background-color: var(--bg-secondary);">
+                    <div class="bg-dark bg-opacity-50 p-4 rounded-xl">
                         <div class="flex items-center mb-4">
                             <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white mr-3">2</div>
-                            <h4 class="font-medium" style="color: var(--text-primary);">Travel Itinerary</h4>
+                            <h4 class="font-medium">Travel Itinerary</h4>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Arrival Date</label>
-                                <input type="date" class="w-full rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                <label class="block text-gray-400 text-sm mb-2">Arrival Date</label>
+                                <input type="date" class="w-full bg-dark border border-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary">
                             </div>
                             <div>
-                                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Departure Date</label>
-                                <input type="date" class="w-full rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                <label class="block text-gray-400 text-sm mb-2">Departure Date</label>
+                                <input type="date" class="w-full bg-dark border border-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary">
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-sm mb-2" style="color: var(--text-secondary);">Places to Visit</label>
-                                <select multiple class="w-full rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary h-32" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                                <label class="block text-gray-400 text-sm mb-2">Places to Visit</label>
+                                <select multiple class="w-full bg-dark border border-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary h-32">
                                     <option>Taj Mahal, Agra</option>
                                     <option>Jaipur, Rajasthan</option>
                                     <option>Varanasi, Uttar Pradesh</option>
@@ -744,7 +557,7 @@
                     </div>
                 </div>
                 
-                <button class="w-full py-4 bg-primary hover:bg-blue-700 rounded-lg font-medium transition duration-300 text-white">
+                <button class="w-full py-4 bg-primary hover:bg-blue-700 rounded-lg font-medium transition duration-300">
                     Register & Generate Digital ID
                 </button>
             </div>
@@ -752,25 +565,25 @@
     </section>
     
     <!-- Download App Section -->
-    <section id="download" class="py-20 px-6 section-bg">
+    <section id="download" class="py-20 px-6">
         <div class="container mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-4xl font-bold mb-4">Download Our <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Mobile App</span></h2>
-                <p class="max-w-3xl mx-auto" style="color: var(--text-secondary);">Stay safe on the go with our comprehensive mobile application</p>
+                <p class="text-gray-400 max-w-3xl mx-auto">Stay safe on the go with our comprehensive mobile application</p>
             </div>
             
-            <div class="max-w-4xl mx-auto card-hover rounded-2xl p-8">
+            <div class="max-w-4xl mx-auto bg-dark bg-opacity-70 backdrop-filter backdrop-blur-lg rounded-2xl p-8 border border-gray-700">
                 <div class="flex flex-col md:flex-row items-center">
                     <div class="md:w-1/2 mb-8 md:mb-0 flex justify-center">
                         <div class="relative">
                             <div class="absolute -inset-6 bg-primary rounded-3xl opacity-20 blur"></div>
-                            <div class="relative p-8 rounded-2xl w-64 h-96 flex items-center justify-center" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                            <div class="relative bg-dark p-8 rounded-2xl border border-gray-700 w-64 h-96 flex items-center justify-center">
                                 <div class="text-center">
                                     <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
                                         <i class="bi bi-shield-check text-white text-2xl"></i>
                                     </div>
-                                    <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">TravelGuard</h3>
-                                    <p class="text-sm mb-6" style="color: var(--text-secondary);">Your Safety Companion</p>
+                                    <h3 class="text-xl font-bold mb-2">TravelGuard</h3>
+                                    <p class="text-gray-400 text-sm mb-6">Your Safety Companion</p>
                                     <div class="text-4xl font-bold text-primary animate-pulse">COMING SOON</div>
                                 </div>
                             </div>
@@ -778,7 +591,7 @@
                     </div>
                     
                     <div class="md:w-1/2 md:pl-8">
-                        <h3 class="text-2xl font-semibold mb-6" style="color: var(--text-primary);">App Features</h3>
+                        <h3 class="text-2xl font-semibold mb-6">App Features</h3>
                         
                         <div class="space-y-4">
                             <div class="flex items-start">
@@ -786,8 +599,8 @@
                                     <i class="bi bi-geo text-primary"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-medium mb-1" style="color: var(--text-primary);">Real-time Location Tracking</h4>
-                                    <p class="text-sm" style="color: var(--text-secondary);">Share your location with trusted contacts and authorities</p>
+                                    <h4 class="font-medium mb-1">Real-time Location Tracking</h4>
+                                    <p class="text-gray-400 text-sm">Share your location with trusted contacts and authorities</p>
                                 </div>
                             </div>
                             
@@ -796,8 +609,8 @@
                                     <i class="bi bi-bell text-primary"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-medium mb-1" style="color: var(--text-primary);">Emergency Alerts</h4>
-                                    <p class="text-sm" style="color: var(--text-secondary);">One-tap SOS to notify authorities in case of emergency</p>
+                                    <h4 class="font-medium mb-1">Emergency Alerts</h4>
+                                    <p class="text-gray-400 text-sm">One-tap SOS to notify authorities in case of emergency</p>
                                 </div>
                             </div>
                             
@@ -806,8 +619,8 @@
                                     <i class="bi bi-shield-check text-primary"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-medium mb-1" style="color: var(--text-primary);">Safety Recommendations</h4>
-                                    <p class="text-sm" style="color: var(--text-secondary);">Get AI-powered safety suggestions for your itinerary</p>
+                                    <h4 class="font-medium mb-1">Safety Recommendations</h4>
+                                    <p class="text-gray-400 text-sm">Get AI-powered safety suggestions for your itinerary</p>
                                 </div>
                             </div>
                             
@@ -816,18 +629,18 @@
                                     <i class="bi bi-chat-dots text-primary"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-medium mb-1" style="color: var(--text-primary);">Multi-language Support</h4>
-                                    <p class="text-sm" style="color: var(--text-secondary);">Communicate easily with local authorities in your language</p>
+                                    <h4 class="font-medium mb-1">Multi-language Support</h4>
+                                    <p class="text-gray-400 text-sm">Communicate easily with local authorities in your language</p>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="mt-8 space-y-4">
-                            <div class="p-4 rounded-xl text-center" style="background-color: var(--bg-secondary);">
-                                <p class="mb-2" style="color: var(--text-secondary);">Get notified when the app launches</p>
+                            <div class="bg-dark bg-opacity-50 p-4 rounded-xl text-center">
+                                <p class="text-gray-400 mb-2">Get notified when the app launches</p>
                                 <div class="flex">
-                                    <input type="email" placeholder="Your email address" class="flex-1 rounded-l-lg px-4 py-2 outline-none" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
-                                    <button class="bg-primary px-4 py-2 rounded-r-lg text-white">Notify Me</button>
+                                    <input type="email" placeholder="Your email address" class="flex-1 bg-dark border border-gray-700 rounded-l-lg px-4 py-2 outline-none">
+                                    <button class="bg-primary px-4 py-2 rounded-r-lg">Notify Me</button>
                                 </div>
                             </div>
                         </div>
@@ -838,7 +651,7 @@
     </section>
     
     <!-- Footer -->
-    <footer class="py-12 px-6" style="border-top: 1px solid var(--border-color);">
+    <footer class="py-12 px-6 border-t border-gray-800">
         <div class="container mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
@@ -848,86 +661,86 @@
                         </div>
                         <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">TravelGuard</span>
                     </div>
-                    <p class="mb-6" style="color: var(--text-secondary);">Ensuring safer travels across India with advanced technology and real-time monitoring.</p>
+                    <p class="text-gray-400 mb-6">Ensuring safer travels across India with advanced technology and real-time monitoring.</p>
                     <div class="flex space-x-4">
-                        <a href="#" class="transition hover:text-primary" style="color: var(--text-secondary);"><i class="bi bi-facebook text-xl"></i></a>
-                        <a href="#" class="transition hover:text-primary" style="color: var(--text-secondary);"><i class="bi bi-twitter text-xl"></i></a>
-                        <a href="#" class="transition hover:text-primary" style="color: var(--text-secondary);"><i class="bi bi-instagram text-xl"></i></a>
-                        <a href="#" class="transition hover:text-primary" style="color: var(--text-secondary);"><i class="bi bi-linkedin text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition"><i class="bi bi-facebook text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition"><i class="bi bi-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition"><i class="bi bi-instagram text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition"><i class="bi bi-linkedin text-xl"></i></a>
                     </div>
                 </div>
                 
                 <div>
-                    <h3 class="text-lg font-semibold mb-6" style="color: var(--text-primary);">Quick Links</h3>
+                    <h3 class="text-lg font-semibold mb-6">Quick Links</h3>
                     <ul class="space-y-3">
-                        <li><a href="#" class="transition hover:text-primary" style="color: var(--text-secondary);">Home</a></li>
-                        <li><a href="#features" class="transition hover:text-primary" style="color: var(--text-secondary);">Features</a></li>
-                        <li><a href="#dashboard" class="transition hover:text-primary" style="color: var(--text-secondary);">Dashboard</a></li>
-                        <li><a href="#registration" class="transition hover:text-primary" style="color: var(--text-secondary);">Registration</a></li>
-                        <li><a href="#download" class="transition hover:text-primary" style="color: var(--text-secondary);">Download App</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition">Home</a></li>
+                        <li><a href="#features" class="text-gray-400 hover:text-primary transition">Features</a></li>
+                        <li><a href="#dashboard" class="text-gray-400 hover:text-primary transition">Dashboard</a></li>
+                        <li><a href="#registration" class="text-gray-400 hover:text-primary transition">Registration</a></li>
+                        <li><a href="#download" class="text-gray-400 hover:text-primary transition">Download App</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="text-lg font-semibold mb-6" style="color: var(--text-primary);">Download App</h3>
+                    <h3 class="text-lg font-semibold mb-6">Download App</h3>
                     <div class="space-y-4">
-                        <button class="flex items-center space-x-3 rounded-lg p-3 w-full transition card-hover">
-                            <i class="bi bi-apple text-2xl" style="color: var(--text-primary);"></i>
+                        <button class="flex items-center space-x-3 bg-dark bg-opacity-50 hover:bg-opacity-100 border border-gray-700 rounded-lg p-3 w-full transition">
+                            <i class="bi bi-apple text-2xl"></i>
                             <div class="text-left">
-                                <p class="text-xs" style="color: var(--text-secondary);">Download on the</p>
-                                <p class="font-medium" style="color: var(--text-primary);">App Store</p>
+                                <p class="text-xs text-gray-400">Download on the</p>
+                                <p class="font-medium">App Store</p>
                             </div>
                         </button>
                         
-                        <button class="flex items-center space-x-3 rounded-lg p-3 w-full transition card-hover">
-                            <i class="bi bi-google-play text-xl" style="color: var(--text-primary);"></i>
+                        <button class="flex items-center space-x-3 bg-dark bg-opacity-50 hover:bg-opacity-100 border border-gray-700 rounded-lg p-3 w-full transition">
+                            <i class="bi bi-google-play text-xl"></i>
                             <div class="text-left">
-                                <p class="text-xs" style="color: var(--text-secondary);">Get it on</p>
-                                <p class="font-medium" style="color: var(--text-primary);">Google Play</p>
+                                <p class="text-xs text-gray-400">Get it on</p>
+                                <p class="font-medium">Google Play</p>
                             </div>
                         </button>
                     </div>
                 </div>
                 
                 <div>
-                    <h3 class="text-lg font-semibold mb-6" style="color: var(--text-primary);">Contact Us</h3>
+                    <h3 class="text-lg font-semibold mb-6">Contact Us</h3>
                     <ul class="space-y-3">
                         <li class="flex items-start">
                             <i class="bi bi-geo-alt text-primary mr-3 mt-1"></i>
-                            <span style="color: var(--text-secondary);">Team Surya, Jais</span>
+                            <span class="text-gray-400">Ministry of Tourism, Government of India, New Delhi</span>
                         </li>
                         <li class="flex items-center">
                             <i class="bi bi-envelope text-primary mr-3"></i>
-                            <span style="color: var(--text-secondary);">gauravt9431@gmail.com</span>
+                            <span class="text-gray-400">support@travelguard.gov.in</span>
                         </li>
                         <li class="flex items-center">
                             <i class="bi bi-phone text-primary mr-3"></i>
-                            <span style="color: var(--text-secondary);">+91 9580561706</span>
+                            <span class="text-gray-400">+91 1800-123-4567</span>
                         </li>
                     </ul>
                 </div>
             </div>
             
-            <div class="mt-12 pt-8 text-center text-sm" style="border-top: 1px solid var(--border-color); color: var(--text-secondary);">
-                <p>© 2025 TravelGuard. All rights reserved. | Made By Team Surya With ❤️</p>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500 text-sm">
+                <p>© 2023 TravelGuard. All rights reserved. | National Tourist Safety Initiative</p>
             </div>
         </div>
     </footer>
     
     <!-- SOS Modal (hidden by default) -->
     <div class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden" id="sosModal">
-        <div class="rounded-2xl p-8 max-w-md w-full mx-4" style="background-color: var(--card-bg); backdrop-filter: blur(15px); border: 1px solid #dc2626;">
+        <div class="bg-dark bg-opacity-90 backdrop-filter backdrop-blur-lg rounded-2xl p-8 max-w-md w-full mx-4 border border-red-500">
             <div class="text-center">
                 <div class="w-20 h-20 mx-auto bg-red-600 rounded-full flex items-center justify-center mb-6">
                     <i class="bi bi-exclamation-triangle-fill text-white text-3xl"></i>
                 </div>
                 
-                <h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">Emergency SOS Activated</h3>
-                <p class="mb-6" style="color: var(--text-secondary);">Your location and alert have been sent to the nearest authorities. Help is on the way.</p>
+                <h3 class="text-2xl font-bold mb-4">Emergency SOS Activated</h3>
+                <p class="text-gray-300 mb-6">Your location and alert have been sent to the nearest authorities. Help is on the way.</p>
                 
                 <div class="flex space-x-4">
-                    <button class="flex-1 py-3 rounded-lg font-medium transition" style="background-color: var(--bg-tertiary); color: var(--text-primary);" onclick="document.getElementById('sosModal').classList.add('hidden')">Cancel</button>
-                    <button class="flex-1 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition text-white">Call 112</button>
+                    <button class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition">Cancel</button>
+                    <button class="flex-1 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition">Call 112</button>
                 </div>
             </div>
         </div>
@@ -935,41 +748,41 @@
     
     <!-- Login Modal (hidden by default) -->
     <div class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden" id="loginModal">
-        <div class="rounded-2xl p-8 max-w-md w-full mx-4 relative" style="background-color: var(--card-bg); backdrop-filter: blur(15px); border: 1px solid var(--border-color);">
+        <div class="bg-dark bg-opacity-90 backdrop-filter backdrop-blur-lg rounded-2xl p-8 max-w-md w-full mx-4 border border-gray-700">
             <div class="text-center mb-6">
-                <h3 class="text-2xl font-bold" style="color: var(--text-primary);">Login to TravelGuard</h3>
-                <p class="mt-2" style="color: var(--text-secondary);">Access your tourist or authority account</p>
+                <h3 class="text-2xl font-bold">Login to TravelGuard</h3>
+                <p class="text-gray-300 mt-2">Access your tourist or authority account</p>
             </div>
             
             <form class="space-y-6">
                 <div>
-                    <label class="block text-sm mb-2" style="color: var(--text-secondary);">Email or Username</label>
-                    <input type="text" class="w-full rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                    <label class="block text-gray-400 text-sm mb-2">Email or Username</label>
+                    <input type="text" class="w-full bg-dark border border-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary">
                 </div>
                 
                 <div>
-                    <label class="block text-sm mb-2" style="color: var(--text-secondary);">Password</label>
-                    <input type="password" class="w-full rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                    <label class="block text-gray-400 text-sm mb-2">Password</label>
+                    <input type="password" class="w-full bg-dark border border-gray-700 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-primary">
                 </div>
                 
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <input type="checkbox" id="remember" class="h-4 w-4 text-primary">
-                        <label for="remember" class="ml-2 text-sm" style="color: var(--text-secondary);">Remember me</label>
+                        <label for="remember" class="ml-2 text-sm text-gray-400">Remember me</label>
                     </div>
                     <a href="#" class="text-sm text-primary hover:underline">Forgot password?</a>
                 </div>
                 
-                <button type="submit" class="w-full py-3 bg-primary hover:bg-blue-700 rounded-lg font-medium transition duration-300 text-white">
+                <button type="submit" class="w-full py-3 bg-primary hover:bg-blue-700 rounded-lg font-medium transition duration-300">
                     Login
                 </button>
             </form>
             
             <div class="mt-6 text-center">
-                <p style="color: var(--text-secondary);">Don't have an account? <a href="#registration" class="text-primary hover:underline">Register as Tourist</a></p>
+                <p class="text-gray-400">Don't have an account? <a href="#registration" class="text-primary hover:underline">Register as Tourist</a></p>
             </div>
             
-            <button class="absolute top-4 right-4 hover:text-white" id="closeLoginModal" style="color: var(--text-secondary);">
+            <button class="absolute top-4 right-4 text-gray-400 hover:text-white" id="closeLoginModal">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
@@ -1051,6 +864,19 @@
             if (sosButton) {
                 sosButton.addEventListener('click', function() {
                     sosModal.classList.remove('hidden');
+                    
+                    // Add event listeners for SOS modal buttons
+                    const sosCancelButton = sosModal.querySelector('button:first-child');
+                    const sosCallButton = sosModal.querySelector('button:last-child');
+                    
+                    sosCancelButton.addEventListener('click', function() {
+                        sosModal.classList.add('hidden');
+                    });
+                    
+                    sosCallButton.addEventListener('click', function() {
+                        alert('Emergency call placed to authorities. Help is on the way!');
+                        sosModal.classList.add('hidden');
+                    });
                 });
             }
             
@@ -1085,53 +911,61 @@
             initMap();
             
             function initMap() {
-        // Create a map centered on India
-        const map = L.map('map').setView([20.5937, 78.9629], 5);
-        
-        // Add different tile layers
-        const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 20
-        });
-        
-        const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-            maxZoom: 20
-        });
-        
-        
-        
-        // CHANGED: Add satellite layer as default instead of streets
-        satellite.addTo(map);
-        
-        // Add layer control
-        const baseMaps = {
-            "Standard": streets,
-            "Satellite": satellite,
-            "Terrain": terrain,
-            "Dark Mode": dark
-        };
-        
-        L.control.layers(baseMaps).addTo(map);
-        
-        // Map style selector functionality
-        const mapStyleSelector = document.getElementById('mapStyleSelector');
-        mapStyleSelector.addEventListener('change', function() {
-            const style = this.value;
-            
-            // Remove all layers
-            map.eachLayer(function(layer) {
-                if (layer instanceof L.TileLayer) {
-                    map.removeLayer(layer);
-                }
-            });
-            
-            // Add selected layer
-            if (style === 'streets') streets.addTo(map);
-            else if (style === 'satellite') satellite.addTo(map);
-            else if (style === 'terrain') terrain.addTo(map);
-            else if (style === 'dark') dark.addTo(map);
-        });
+                // Create a map centered on India
+                const map = L.map('map').setView([20.5937, 78.9629], 5);
+                
+                // Add different tile layers
+                const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 20
+                });
+                
+                const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                    maxZoom: 20
+                });
+                
+                const terrain = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+                    maxZoom: 20
+                });
+                
+                const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    maxZoom: 20
+                });
+                
+                // Add default layer
+                streets.addTo(map);
+                
+                // Add layer control
+                const baseMaps = {
+                    "Standard": streets,
+                    "Satellite": satellite,
+                    "Terrain": terrain,
+                    "Dark Mode": dark
+                };
+                
+                L.control.layers(baseMaps).addTo(map);
+                
+                // Map style selector functionality
+                const mapStyleSelector = document.getElementById('mapStyleSelector');
+                mapStyleSelector.addEventListener('change', function() {
+                    const style = this.value;
+                    
+                    // Remove all layers
+                    map.eachLayer(function(layer) {
+                        if (layer instanceof L.TileLayer) {
+                            map.removeLayer(layer);
+                        }
+                    });
+                    
+                    // Add selected layer
+                    if (style === 'streets') streets.addTo(map);
+                    else if (style === 'satellite') satellite.addTo(map);
+                    else if (style === 'terrain') terrain.addTo(map);
+                    else if (style === 'dark') dark.addTo(map);
+                });
                 
                 // Add some sample tourist locations with different statuses
                 const touristLocations = [
@@ -1210,6 +1044,14 @@
                 
                 // Add scale control
                 L.control.scale({metric: true, imperial: false}).addTo(map);
+                
+                // Add minimap control
+                const miniMap = new L.Control.MiniMap(streets, {
+                    toggleDisplay: true,
+                    position: 'bottomright',
+                    width: 150,
+                    height: 150
+                }).addTo(map);
             }
             
             function createParticles() {
@@ -1240,5 +1082,5 @@
             }
         });
     </script>
-</body>
+    </body>
 </html>

@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelGuard - Complete Safety System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(15, 23, 42, 0.8);
+            --nav-bg: rgba(15, 23, 42, 0.9);
+        }
+        
+        .light-mode {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f1f5f9;
+            --bg-tertiary: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --border-color: rgba(15, 23, 42, 0.1);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --nav-bg: rgba(255, 255, 255, 0.95);
+        }
+        
+        body {
+            overflow-x: hidden;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+        
+        .server-container {
+            display: none;
+            min-height: 100vh;
+        }
+        
+        .server-container.active {
+            display: block;
+        }
+        
+        .server-tabs {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+            background: var(--nav-bg);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+        
+        .server-tab {
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .server-tab.active {
+            background: #2563eb;
+            color: white;
+        }
+        
+        /* Other styles from previous implementation */
+        .moving-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.4;
+            background: linear-gradient(125deg, #2563eb 0%, #8b5cf6 50%, #ec4899 100%);
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease infinite;
+        }
+        
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+        
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        .sos-button {
+            animation: pulse-sos 2s infinite;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        
+        @keyframes pulse-sos {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 0.75rem;
+            z-index: 1;
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(37, 99, 235, 0.2);
+            border-radius: 50%;
+            border-top: 5px solid #2563eb;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .police-badge {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        
+        .incident-alert {
+            border-left: 4px solid #ef4444;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .heart-rate-monitor {
+            position: relative;
+            height: 100px;
+            overflow: hidden;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+        
+        .heart-rate-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #ef4444;
+            animation: heartBeat 1.2s infinite;
+        }
+        
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.1); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.1); }
+            60% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+        
+        .normal-heart .heart-rate-line {
+            background: #10b981;
+            animation: normalBeat 0.8s infinite;
+        }
+        
+        @keyframes normalBeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .ministry-dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .ministry-dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="text-center">
+            <div class="loader"></div>
+            <h2 class="text-xl font-semibold mt-4">TravelGuard System</h2>
+            <p class="mt-2">Loading complete safety system...</p>
+        </div>
+    </div>
+    
+    <!-- Server Selection Tabs -->
+    <div class="server-tabs">
+        <div class="server-tab active" data-target="tourist">Tourist App</div>
+        <div class="server-tab" data-target="ministry">Ministry Server</div>
+        <div class="server-tab" data-target="police">Police Server</div>
+    </div>
+    
+    <!-- Moving Background -->
+    <div class="moving-bg"></div>
+    <div class="bg-overlay"></div>
+    
+    <!-- TOURIST SERVER -->
+    <div id="tourist-server" class="server-container active">
+        <nav class="fixed w-full z-50 backdrop-filter backdrop-blur-lg py-4 px-6">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                        <i class="bi bi-person text-white text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold">Tourist App</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition duration-300 text-white">
+                        <i class="bi bi-person-circle mr-2"></i> My Profile
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <section class="pt-32 pb-20 px-6">
+            <div class="container mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Tourist Info Card -->
+                    <div class="card-hover rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Tourist Information</h3>
+                        <div class="flex items-center mb-4">
+                            <div class="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center text-2xl">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="font-medium">John Smith</p>
+                                <p class="text-sm text-gray-400">US Passport: 789456123</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-sm text-gray-400">Current Location</p>
+                                <p class="font-medium">Agra, Uttar Pradesh</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400">Itinerary Status</p>
+                                <p class="font-medium">Day 3 of 7 - On Schedule</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400">Last Update</p>
+                                <p class="font-medium">2 minutes ago</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Health Monitoring -->
+                    <div class="card-hover rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Health Monitoring</h3>
+                        <div class="heart-rate-monitor normal-heart mb-4">
+                            <div class="heart-rate-line"></div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-green-500">72 BPM</p>
+                            <p class="text-sm text-gray-400">Normal Heart Rate</p>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-gray-400">Device Status</span>
+                                <span class="text-green-500 font-bold">Connected</span>
+                            </div>
+                            <div class="w-full rounded-full h-2.5 bg-gray-700">
+                                <div class="bg-green-500 h-2.5 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Emergency Panel -->
+                    <div class="card-hover rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Emergency Services</h3>
+                        <div class="mb-6 p-4 rounded-lg bg-gray-800">
+                            <p class="text-sm text-gray-400">Current Safety Status</p>
+                            <p class="font-medium text-green-500">All Regions Safe</p>
+                            <p class="text-xs text-gray-400 mt-2">No alerts in your current area</p>
+                        </div>
+                        
+                        <button class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition duration-300 flex items-center justify-center sos-button text-white mb-4">
+                            <i class="bi bi-exclamation-triangle-fill mr-2"></i> SOS Emergency
+                        </button>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <button class="py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition duration-300 text-white text-sm">
+                                <i class="bi bi-shield-check mr-1"></i> Check Safety
+                            </button>
+                            <button class="py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition duration-300 text-white text-sm">
+                                <i class="bi bi-geo-alt mr-1"></i> Share Location
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Map Section -->
+                <div class="card-hover rounded-2xl p-6 mt-8">
+                    <h3 class="text-xl font-semibold mb-4">Live Location & Alerts</h3>
+                    <div id="tourist-map" class="rounded-xl" style="height: 400px;"></div>
+                    
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-3 rounded-lg bg-gray-800">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                                <p class="text-sm">Safe Zones</p>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-lg bg-gray-800">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                                <p class="text-sm">Moderate Alert</p>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-lg bg-gray-800">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                                <p class="text-sm">Danger Zones</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- MINISTRY OF TOURISM SERVER -->
+    <div id="ministry-server" class="server-container">
+        <nav class="fixed w-full z-50 backdrop-filter backdrop-blur-lg py-4 px-6">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-lg bg-green-600 flex items-center justify-center">
+                        <i class="bi bi-building text-white text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold">Ministry of Tourism Server</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition duration-300 text-white">
+                        <i class="bi bi-graph-up mr-2"></i> Analytics
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <section class="pt-32 pb-20 px-6">
+            <div class="container mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="card-hover rounded-xl p-4 text-center">
+                        <div class="text-3xl font-bold mb-2">1,247</div>
+                        <p class="text-sm text-gray-400">Active Tourists</p>
+                    </div>
+                    <div class="card-hover rounded-xl p-4 text-center">
+                        <div class="text-3xl font-bold text-green-500 mb-2">92%</div>
+                        <p class="text-sm text-gray-400">Safe Status</p>
+                    </div>
+                    <div class="card-hover rounded-xl p-4 text-center">
+                        <div class="text-3xl font-bold text-yellow-500 mb-2">17</div>
+                        <p class="text-sm text-gray-400">Moderate Alerts</p>
+                    </div>
+                    <div class="card-hover rounded-xl p-4 text-center">
+                        <div class="text-3xl font-bold text-red-500 mb-2">3</div>
+                        <p class="text-sm text-gray-400">Emergency Cases</p>
+                    </div>
+                </div>
+                
+                <div class="ministry-dashboard-grid">
+                    <!-- Regional Distribution -->
+                    <div class="card-hover rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Tourist Distribution by Region</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span>Uttar Pradesh</span>
+                                    <span>324 (26%)</span>
+                                </div>
+                                <div class="w-full rounded-full h-2.5 bg-gray-700">
+                                    <div class="bg-blue-500 h-2.5 rounded-full" style="width: 26%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span>Rajasthan</span>
+                                    <span>287 (23%)</span>
+                                </div>
+                                <div class="w-full rounded-full h-2.5 bg-gray-700">
+                                    <div class="bg-blue-500 h-2.5 rounded-full" style="width: 23%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span>Goa</span>
+                                    <span>198 (16%)</span>
+                                </div>
+                                <div class="w-full rounded-full h-2.5 bg-gray-700">
+                                    <div class="bg-blue-500 h-2.5 rounded-full" style="width: 16%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span>Kerala</span>
+                                    <span>175 (14%)</span>
+                                </div>
+                                <div class="w-full rounded-full h-2.5 bg-gray-700">
+                                    <div class="bg-blue-500 h-2.5 rounded-full" style="width: 14%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span>Other Regions</span>
+                                    <span>263 (21%)</span>
+                                </div>
+                                <div class="w-full rounded-full h-2.5 bg-gray-700">
+                                    <div class="bg-blue-500 h-2.5 rounded-full" style="width: 21%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Alerts -->
+                    <div class="card-hover rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Recent Alerts</h3>
+                        <div class="space-y-4">
+                            <div class="p-3 rounded-lg bg-gray-800 incident-alert">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium">Medical Emergency</p>
+                                        <p class="text-sm text-gray-400">Sarah Johnson (US) - Agra</p>
+                                    </div>
+                                    <span class="text-red-500 text-sm">12 min ago</span>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-lg bg-gray-800">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium">Itinerary Deviation</p>
+                                        <p class="text-sm text-gray-400">Robert Kim (KR) - Rajasthan</p>
+                                    </div>
+                                    <span class="text-yellow-500 text-sm">42 min ago</span>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-lg bg-gray-800">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium">Device Disconnect</p>
+                                        <p class="text-sm text-gray-400">Emma Wilson (UK) - Goa</p>
+                                    </div>
+                                    <span class="text-yellow-500 text-sm">1 hr ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- National Overview Map -->
+                    <div class="card-hover rounded-2xl p-6 md:col-span-2">
+                        <h3 class="text-xl font-semibold mb-4">National Tourist Distribution</h3>
+                        <div id="ministry-map" class="rounded-xl" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- POLICE SERVER -->
+    <div id="police-server" class="server-container">
+        <nav class="fixed w-full z-50 backdrop-filter backdrop-blur-lg py-4 px-6">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-lg bg-blue-800 flex items-center justify-center">
+                        <i class="bi bi-shield-check text-white text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold">Police Response Server</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="px-4 py-2 bg-blue-800 hover:bg-blue-900 rounded-lg transition duration-300 text-white">
+                        <i class="bi bi-list-task mr-2"></i> Active Cases
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <section class="pt-32 pb-20 px-6">
+            <div class="container mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="card-hover rounded-xl p-4 text-center">
+                        <div class="police-badge">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div class="text-3xl font-bold mb-2">24</div>
+                        <p class="text-sm text-gray-400">Available Units</p>
+                    </div>
+                    <div class="card-hover rounded-xl p-4 text-center">
+                        <div class="text-3xl font-bold text-yellow-500 mb-2">8</div>
+                        <p class="text-sm text-gray-400">Active Responses</p>
+                    </div>
+                    <div class="card-hover rounded-xl p-4 text-center">
+                        <div class="text-3xl font-bold text-red-500 mb-2">3</div>
+                        <p class="text-sm text-gray-400">Emergency Cases</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Emergency Cases -->
+                    <div class="card-hover rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Emergency Response Cases</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 rounded-lg bg-gray-800 incident-alert">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <p class="font-medium">SOS Triggered - Medical Emergency</p>
+                                        <p class="text-sm text-gray-400">Sarah Johnson (US) - Agra, Near Taj Mahal</p>
+                                    </div>
+                                    <span class="text-red-500">HIGH PRIORITY</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm text-gray-400">Response Team</p>
+                                        <p class="font-medium">Unit 7A - Medical Team</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm text-gray-400">ETA</p>
+                                        <p class="font-medium text-green-500">8 minutes</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 rounded-lg bg-gray-800">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <p class="font-medium">Theft Report</p>
+                                        <p class="text-sm text-gray-400">David Chen (AU) - Delhi Market Area</p>
+                                    </div>
+                                    <span class="text-yellow-500">MEDIUM PRIORITY</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm text-gray-400">Response Team</p>
+                                        <p class="font-medium">Unit 3B - Patrol</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm text-gray-400">ETA</p>
+                                        <p class="font-medium">15 minutes</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 rounded-lg bg-gray-800">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <p class="font-medium">Lost Tourist</p>
+                                        <p class="text-sm text-gray-400">Maria Rodriguez (ES) - Jaipur Old City</p>
+                                    </div>
+                                    <span class="text-yellow-500">MEDIUM PRIORITY</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm text-gray-400">Response Team</p>
+                                        <p class="font-medium">Unit 5C - Patrol</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm text-gray-400">ETA</p>
+                                        <p class="font-medium">12 minutes</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Response Management -->
+                    <div class="card-hover rounded-2xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Response Management</h3>
+                        <div id="police-map" class="rounded-xl mb-4" style="height: 300px;"></div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-3 rounded-lg bg-gray-800">
+                                <p class="text-sm text-gray-400">Active Responses</p>
+                                <p class="font-medium text-xl">8</p>
+                            </div>
+                            <div class="p-3 rounded-lg bg-gray-800">
+                                <p class="text-sm text-gray-400">Avg Response Time</p>
+                                <p class="font-medium text-xl">14.2<span class="text-sm">min</span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="w-full py-3 bg-blue-800 hover:bg-blue-900 rounded-lg transition duration-300 text-white">
+                                <i class="bi bi-plus-circle mr-2"></i> Deploy Additional Unit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                }, 500);
+            }, 1500);
+            
+            // Server tab switching
+            const serverTabs = document.querySelectorAll('.server-tab');
+            const serverContainers = document.querySelectorAll('.server-container');
+            
+            serverTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-target');
+                    
+                    // Update active tab
+                    serverTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show target container
+                    serverContainers.forEach(container => {
+                        container.classList.remove('active');
+                    });
+                    document.getElementById(`${target}-server`).classList.add('active');
+                });
+            });
+            
+            // Initialize maps
+            initTouristMap();
+            initMinistryMap();
+            initPoliceMap();
+            
+            function initTouristMap() {
+                const map = L.map('tourist-map').setView([27.1767, 78.0081], 13);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                // Add current location marker
+                L.marker([27.1767, 78.0081])
+                    .addTo(map)
+                    .bindPopup('<b>Your Location</b><br>Agra, Uttar Pradesh')
+                    .openPopup();
+                
+                // Add safe zones
+                L.circle([27.1750, 78.0422], {radius: 1000, color: 'green', fillOpacity: 0.1})
+                    .addTo(map)
+                    .bindPopup('Safe Zone: Taj Mahal Area');
+                
+                L.circle([27.1800, 78.0200], {radius: 800, color: 'green', fillOpacity: 0.1})
+                    .addTo(map)
+                    .bindPopup('Safe Zone: Hotel District');
+            }
+            
+            function initMinistryMap() {
+                const map = L.map('ministry-map').setView([22.5, 79], 5);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                // Add regional markers
+                const regions = [
+                    {lat: 27.1767, lng: 78.0081, name: 'Agra', count: 324},
+                    {lat: 26.9124, lng: 75.7873, name: 'Jaipur', count: 287},
+                    {lat: 15.2993, lng: 74.1240, name: 'Goa', count: 198},
+                    {lat: 9.9312, lng: 76.2673, name: 'Kerala', count: 175},
+                    {lat: 28.6139, lng: 77.2090, name: 'Delhi', count: 120},
+                    {lat: 18.5204, lng: 73.8567, name: 'Pune', count: 85},
+                    {lat: 12.9716, lng: 77.5946, name: 'Bangalore', count: 78}
+                ];
+                
+                regions.forEach(region => {
+                    const size = Math.sqrt(region.count) * 2;
+                    L.circleMarker([region.lat, region.lng], {
+                        radius: size,
+                        color: '#2563eb',
+                        fillColor: '#2563eb',
+                        fillOpacity: 0.5
+                    })
+                    .addTo(map)
+                    .bindPopup(`<b>${region.name}</b><br>${region.count} tourists`);
+                });
+            }
+            
+            function initPoliceMap() {
+                const map = L.map('police-map').setView([27.1767, 78.0081], 12);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                // Add emergency locations
+                L.marker([27.1750, 78.0422], {
+                    icon: L.icon({
+                        iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiNlYzI4OTkiLz4KPHBhdGggZD0iTTggOEwxNiAxNk04IDE2TDE2IDgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                })
+                .addTo(map)
+                .bindPopup('<b>Emergency: Medical</b><br>Sarah Johnson (US)<br>High Priority');
+                
+                L.marker([27.1850, 78.0050], {
+                    icon: L.icon({
+                        iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiNmYmJjMDkiLz4KPHBhdGggZD0iTTEyIDhWN00xMiAxMlYxM00xMiAxNlYxNS41IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                })
+                .addTo(map)
+                .bindPopup('<b>Alert: Theft Report</b><br>David Chen (AU)<br>Medium Priority');
+                
+                // Add police stations
+                L.marker([27.1800, 78.0200], {
+                    icon: L.icon({
+                        iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiMyNTYzZWIiLz4KPHBhdGggZD0iTTEyIDExVjE0TTE1IDEySDkiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    })
+                })
+                .addTo(map)
+                .bindPopup('<b>Police Station</b><br>Main Station<br>Available Units: 5');
+            }
+        });
+    </script>
+</body>
+</html>
