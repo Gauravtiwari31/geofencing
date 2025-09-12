@@ -1,0 +1,64 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
+  <diagram name="Page-1" id="RQfuznaPHeu26p_d9cHW">
+    <mxGraphModel dx="920" dy="591" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-1" value="Tourist Server/Kuch naam&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;rotation=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="240" height="480" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-2" value="Heart Beat Data, SOS status Processed through a Simple System" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="300" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-3" value="Wearable device handling Heartbeat monitoring and SOS button with all data shared over Wi-Fi to application" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="410" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-5" value="Application Communicates with the Ministry Of Tourism Server Sending Geo-Location Data along with SOS Status and any ablnormal Heart Beat Status" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="190" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-6" value="Application Recieves regular Updates from MoT Server in case of being near a red zone or any other Alerts that may affect the tourist" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="9KAsJfDmQmvKVMutVQD0-8" target="9KAsJfDmQmvKVMutVQD0-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-8" value="Ministry Of Tourism Server" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="360" y="40" width="260" height="480" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-10" value="Program to recieve data from the Tourist Application Geo-Location, SOS status and any abnormal heart rate reading" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="70" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-11" value="Front-end renders all the tourist locations on a map of india providing the ministry with live data on tourist density per location. Also any abnormal status is rendered as a red flag on the screen providing the Ministry with near instant data to determine the danger level of any location in real time" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="200" width="220" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-15" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="9KAsJfDmQmvKVMutVQD0-1" target="9KAsJfDmQmvKVMutVQD0-8">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="280" y="450" as="sourcePoint" />
+            <mxPoint x="330" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-16" value="Program that works in the background to send alert to the tourist in case the tourist reaches in a specific range of areas marked unsafe, etc" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="350" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-17" value="A small program that Stays in Sync with the Police Department and instantaneously Forwards the location, Identity and Recent Data as soon as SOS or any abnormality is noticed" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="380" y="430" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-18" value="Light Weight Police Server&lt;br&gt;&lt;div&gt;&amp;nbsp;&lt;/div&gt;" style="whiteSpace=wrap;html=1;verticalAlign=top;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="670" y="40" width="240" height="480" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-20" value="Recieves the alerting information from the MoT server and processes the relevant data." style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="70" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-21" value="Drafts the relevant E-FIR and fills in information into the FIR and sends it forward to begin processing" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="150" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-22" value="With the Police deparment&#39;s Permission Sends the Tourist Data and cause of Alerting aling with the most recent location to any patrolling officers in the area or the closest police station" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="280" width="220" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="9KAsJfDmQmvKVMutVQD0-23" value="PS padh aur data add karle isme" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="400" width="220" height="110" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
