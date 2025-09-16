@@ -1,0 +1,27 @@
+# OS
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Expo
+.expo/
+dist/
+
+# Environment variables
+.env
+.env.local
+
+# EAS
+credentials.json
+google-play-key.json
+
+# Build outputs
+web-build/
+*.apk
+*.aab
+*.ipa
+*.dSYM.zip
