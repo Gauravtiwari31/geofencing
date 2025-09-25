@@ -25,3 +25,5 @@ web-build/
 *.aab
 *.ipa
 *.dSYM.zip
+*.pyc
+/Ministry_of_Tourism_Application/venv/lib
