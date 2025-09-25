@@ -3,6 +3,25 @@ from typing import Optional, List
 from pydantic import BaseModel
 
 
+class PositionData(BaseModel):
+    lat: float
+    lng: float
+    alt: Optional[float] = None
+    speed_mps: Optional[float] = None
+    ts: Optional[datetime] = None
+
+
+class HealthData(BaseModel):
+    heart_rate: Optional[int] = None
+    fall_detected: Optional[bool] = None
+    battery: Optional[float] = None
+
+
+class AppMetadata(BaseModel):
+    build: str
+    platform: str
+
+
 class LocationData(BaseModel):
     lat: float
     lng: float
@@ -17,9 +36,12 @@ class SOSData(BaseModel):
 
 
 class IngestPayload(BaseModel):
-    location: LocationData
-    timestamp: str
+    tourist_id: Optional[str] = None
+    device_id: Optional[str] = None
+    position: PositionData
+    health: Optional[HealthData] = None
     sos: Optional[SOSData] = None
+    app: AppMetadata
 
 
 class DeviceRegistration(BaseModel):

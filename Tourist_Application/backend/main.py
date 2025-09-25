@@ -14,7 +14,7 @@ from backend.mqtt_client import mqtt_client
 from backend.simulation import path_simulator, PREDEFINED_PATHS
 from backend.models import (
     LocationData, SOSData, DeviceRegistration, SimulationPath,
-    AuthStatus, ConnectionStatus, AppStatus
+    AuthStatus, ConnectionStatus, AppStatus, IngestPayload, PositionData, HealthData, AppMetadata
 )
 from config.settings import settings
 
@@ -35,6 +35,19 @@ templates = Jinja2Templates(directory="frontend")
 # Global state
 current_token: Optional[str] = None
 current_user_id: Optional[str] = None
+last_ingest_payload: Optional[IngestPayload] = None
+
+
+def _build_redirect_uri(request: Request) -> str:
+    if settings.app_external_base_url:
+        return f"{settings.app_external_base_url.rstrip('/')}/auth/callback"
+
+    scheme = request.headers.get("x-forwarded-proto", request.url.scheme or "http")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    if not host:
+        host = f"{settings.app_host}:{settings.app_port}"
+
+    return f"{scheme}://{host.rstrip('/')}/auth/callback"
 
 
 # Request models
@@ -61,20 +74,20 @@ async def get_main_page(request: Request):
 
 
 @app.get("/auth/login")
-async def login():
+async def login(request: Request):
     """Redirect to Keycloak login"""
-    redirect_uri = f"http://{settings.app_host}:{settings.app_port}/auth/callback"
+    redirect_uri = _build_redirect_uri(request)
     auth_url = await keycloak_auth.get_auth_url(redirect_uri)
     return RedirectResponse(url=auth_url)
 
 
 @app.get("/auth/callback")
-async def auth_callback(code: str, state: Optional[str] = None):
+async def auth_callback(request: Request, code: str, state: Optional[str] = None):
     """Handle Keycloak callback"""
     global current_token, current_user_id
     
     try:
-        redirect_uri = f"http://{settings.app_host}:{settings.app_port}/auth/callback"
+        redirect_uri = _build_redirect_uri(request)
         token_data = await keycloak_auth.exchange_code_for_token(code, redirect_uri)
         
         current_token = token_data["access_token"]
@@ -135,68 +148,98 @@ async def get_auth_status():
 @app.post("/api/location")
 async def send_location(location_req: LocationRequest):
     """Send location to Gateway"""
-    location = LocationData(lat=location_req.lat, lng=location_req.lng)
-    
-    # For demo/development: allow location setting without authentication
-    # In production, uncomment the authentication check below
-    # if not current_token:
-    #     raise HTTPException(status_code=401, detail="Not authenticated")
+    global last_ingest_payload
+    position_ts = datetime.utcnow()
+    position = PositionData(
+        lat=location_req.lat,
+        lng=location_req.lng,
+        ts=position_ts
+    )
+    health = HealthData()  # Placeholder, extend when collecting health metrics
+    app_meta = AppMetadata(build=settings.app_build_version, platform=settings.app_platform)
+    payload = IngestPayload(
+        tourist_id=current_user_id,
+        device_id=settings.device_id,
+        position=position,
+        health=health,
+        sos=None,
+        app=app_meta
+    )
+    last_ingest_payload = payload
     
     if current_token:
-        # If authenticated, try to send to Gateway
         try:
-            result = await gateway_client.send_location(location, current_token)
+            result = await gateway_client.send_ingest(payload, current_token)
+            if not settings.mod_core_enable_forwarding:
+                result.setdefault("mod_core", {"status": "disabled", "message": "MoD Core forwarding disabled (set MOD_CORE_ENABLE_FORWARDING=true)"})
             return result
         except Exception as e:
-            # If Gateway is unavailable, still accept the location
             return {
                 "status": "accepted_locally", 
                 "message": f"Location recorded locally. Gateway error: {str(e)}",
-                "location": {"lat": location.lat, "lng": location.lng}
+                "payload": payload.model_dump(exclude_none=True)
             }
     else:
-        # Not authenticated - just accept location locally for demo
         return {
             "status": "accepted_locally", 
             "message": "Location recorded locally (not authenticated)",
-            "location": {"lat": location.lat, "lng": location.lng}
+            "payload": payload.model_dump(exclude_none=True)
         }
 
 
 @app.post("/api/sos")
 async def send_sos(sos_req: SOSRequest):
     """Send SOS alert"""
-    location = LocationData(lat=sos_req.lat, lng=sos_req.lng)
-    
-    # For demo/development: allow SOS without authentication
-    # In production, uncomment the authentication check below
-    # if not current_token:
-    #     raise HTTPException(status_code=401, detail="Not authenticated")
+    global last_ingest_payload
+    position_ts = datetime.utcnow()
+    position = PositionData(
+        lat=sos_req.lat,
+        lng=sos_req.lng,
+        ts=position_ts
+    )
+    health = HealthData()
+    app_meta = AppMetadata(build=settings.app_build_version, platform=settings.app_platform)
+    sos_data = SOSData(
+        active=True,
+        lat=sos_req.lat,
+        lng=sos_req.lng,
+        timestamp=position_ts
+    )
+    payload = IngestPayload(
+        tourist_id=current_user_id,
+        device_id=settings.device_id,
+        position=position,
+        health=health,
+        sos=sos_data,
+        app=app_meta
+    )
+    last_ingest_payload = payload
     
     gateway_result = None
     mqtt_result = False
     
     if current_token:
-        # If authenticated, try to send to Gateway
         try:
-            gateway_result = await gateway_client.send_sos(location, current_token)
+            gateway_result = await gateway_client.send_sos(payload, current_token)
+            if not settings.mod_core_enable_forwarding and isinstance(gateway_result, dict):
+                gateway_result.setdefault("mod_core", {"status": "disabled", "message": "MoD Core forwarding disabled (set MOD_CORE_ENABLE_FORWARDING=true)"})
         except Exception as e:
             gateway_result = {"error": str(e), "status": "gateway_unavailable"}
     else:
         gateway_result = {"status": "demo_mode", "message": "SOS recorded locally (not authenticated)"}
     
-    # Try to send via MQTT (ESP32 simulation)
     try:
-        mqtt_result = await mqtt_client.publish_sos(location)
+        mqtt_result = await mqtt_client.publish_sos(LocationData(lat=sos_req.lat, lng=sos_req.lng))
     except Exception as e:
         print(f"MQTT SOS failed: {e}")
     
     return {
         "status": "sos_sent",
-        "message": f"🚨 EMERGENCY ALERT ACTIVATED at {location.lat:.6f}, {location.lng:.6f}",
+        "message": f"🚨 EMERGENCY ALERT ACTIVATED at {sos_req.lat:.6f}, {sos_req.lng:.6f}",
         "gateway_result": gateway_result,
+        "mod_core_forwarded": gateway_result.get("mod_core") if isinstance(gateway_result, dict) else None,
         "mqtt_sent": mqtt_result,
-        "location": {"lat": location.lat, "lng": location.lng}
+        "payload": payload.model_dump(exclude_none=True)
     }
 
 

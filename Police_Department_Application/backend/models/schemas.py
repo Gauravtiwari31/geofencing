@@ -15,6 +15,8 @@ class IncidentType(str, Enum):
     SOS = "SOS"
     RED_ZONE = "RED_ZONE"
     DISCONNECTION = "DISCONNECTION"
+    GEOFENCE = "GEOFENCE"
+    INACTIVITY = "INACTIVITY"
 
 
 class IncidentStatus(str, Enum):

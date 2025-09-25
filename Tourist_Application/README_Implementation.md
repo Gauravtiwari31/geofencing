@@ -60,6 +60,19 @@ cd /workspace
 PYTHONPATH=/workspace uvicorn backend.main:app --host 0.0.0.0 --port 2040 --reload
 ```
 
+### Stop All Processes
+```bash
+# Stop the Tourist Mobile Simulator
+pkill -f uvicorn
+pkill -f "backend.main:app"
+
+# Alternative: Kill all Python processes
+pkill -f python
+
+# Verify no processes are running
+ps aux | grep -E "(uvicorn|python|backend)" | grep -v grep
+```
+
 ## 🔧 Configuration
 
 The application uses environment variables for configuration:
@@ -68,8 +81,8 @@ The application uses environment variables for configuration:
 GATEWAY_URL=http://localhost:2045          # Gateway API endpoint
 GATEWAY_MQTT_HOST=localhost                # MQTT broker host
 GATEWAY_MQTT_PORT=2046                     # MQTT broker port
-KEYCLOAK_URL=http://localhost:8080         # Keycloak server
-KEYCLOAK_REALM=tourism                     # Keycloak realm
+KEYCLOAK_URL=https://localhost:2027         # Keycloak server
+KEYCLOAK_REALM=mod-core                     # Keycloak realm
 KEYCLOAK_CLIENT_ID=tourist-app             # OAuth client ID
 DEVICE_ID=tourist-sim-001                  # Simulated ESP32 device ID
 ```

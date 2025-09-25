@@ -18,8 +18,8 @@ export PYTHONPATH=/workspace
 export GATEWAY_URL=${GATEWAY_URL:-"http://localhost:2045"}
 export GATEWAY_MQTT_HOST=${GATEWAY_MQTT_HOST:-"localhost"}
 export GATEWAY_MQTT_PORT=${GATEWAY_MQTT_PORT:-"2046"}
-export KEYCLOAK_URL=${KEYCLOAK_URL:-"http://localhost:8080"}
-export KEYCLOAK_REALM=${KEYCLOAK_REALM:-"tourism"}
+export KEYCLOAK_URL=${KEYCLOAK_URL:-"https://localhost:2027"}
+export KEYCLOAK_REALM=${KEYCLOAK_REALM:-"mod-core"}
 export KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-"tourist-app"}
 export DEVICE_ID=${DEVICE_ID:-"tourist-sim-001"}
 

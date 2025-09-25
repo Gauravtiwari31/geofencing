@@ -75,11 +75,11 @@ The Ministry of Tourism Core Safety Backend has been successfully implemented an
 
 ## 🔧 **Quick Start Commands**
 
+> 📚 **For detailed startup instructions, see [STARTUP_GUIDE.md](./STARTUP_GUIDE.md)**
+
 ### Start the System:
 ```bash
 cd /workspace
-source venv/bin/activate
-# Start all services using supervisor
 sudo ./start_mod_core.sh
 ```
 

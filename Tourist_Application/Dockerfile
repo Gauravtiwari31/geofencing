@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # Basic tools + Python
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        python3 python3-pip git curl wget ca-certificates openssl && \
+        python3 python3-pip git curl wget ca-certificates openssl jq && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/bin/python3 /usr/bin/python && \
     pip install --no-cache-dir --upgrade pip

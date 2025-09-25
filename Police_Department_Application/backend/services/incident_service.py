@@ -13,7 +13,7 @@ import structlog
 
 from models.models import Incident, Action, Setting
 from models.schemas import (
-    IncidentCreate, IncidentUpdate, IncidentFilters, 
+    IncidentCreate, IncidentUpdate, IncidentFilters,
     IncidentResponse, IncidentSummary, IncidentStats,
     ActionCreate, AckRequest
 )
@@ -205,6 +205,23 @@ class IncidentService:
             except Exception as e:
                 # Don't fail the operation if SSE broadcast fails
                 logger.warning("Failed to broadcast SSE event", error=str(e))
+
+            # Forward acknowledgement to MoD Core (best-effort)
+            try:
+                from services.mod_core_client import mod_core_client
+
+                await mod_core_client.send_acknowledgement(
+                    alert_id=ack_request.alert_id,
+                    tourist_id=ack_request.tourist_id,
+                    officer_id=ack_request.officer_id,
+                    note=ack_request.note,
+                )
+            except Exception as e:
+                logger.warning(
+                    "Failed to forward acknowledgement to MoD Core",
+                    alert_id=ack_request.alert_id,
+                    error=str(e),
+                )
             
             return True, "Incident acknowledged successfully", action.id
             

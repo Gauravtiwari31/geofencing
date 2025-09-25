@@ -38,7 +38,7 @@ The **Tourist Mobile Application** simulates a tourist's mobile device that:
 **External Dependencies:**
 - Gateway API: `http://<GATEWAY_IP>:2045`
 - Gateway MQTT: `mqtt://<GATEWAY_IP>:2046`
-- Keycloak: `http://<KEYCLOAK_IP>:8080`
+- Keycloak: `https://<KEYCLOAK_IP>:2027`
 
 ### 2) Frontend Features
 
@@ -176,8 +176,8 @@ async def publish_esp32_sos(device_id: str, lat: float, lon: float):
 # Environment variables
 GATEWAY_URL = "http://gateway:2045"
 GATEWAY_MQTT_URL = "mqtt://gateway:2046"
-KEYCLOAK_URL = "http://keycloak:8080"
-KEYCLOAK_REALM = "tourism"
+KEYCLOAK_URL = "https://keycloak:2027"
+KEYCLOAK_REALM = "mod-core"
 KEYCLOAK_CLIENT_ID = "tourist-app"
 DEVICE_ID = "tourist-sim-001"  # Simulated ESP32 ID
 ```
@@ -236,5 +236,11 @@ uvicorn backend.main:app --host 0.0.0.0 --port 2040 --reload
 - **HTTPS**: All Gateway communication over HTTPS (except MQTT)
 - **Input Validation**: Sanitize all location and user inputs
 - **Rate Limiting**: Respect Gateway rate limits to prevent blocking
+
+### 11) Authentication Notes
+- OAuth2 tokens issued by Keycloak realm `mod-core`
+- Quick token retrieval guide in `docs/Keycloak_Token_Guide.md`
+- Demo credentials (dev only): `tourist-demo` / `tourist123`
+- Use the retrieved `access_token` as Bearer for Gateway and MoD Core APIs
 
 This implementation provides a complete tourist mobile application simulator that integrates with your Gateway infrastructure while offering both manual and automated testing capabilities.

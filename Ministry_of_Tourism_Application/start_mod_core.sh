@@ -3,10 +3,9 @@ set -e
 
 echo "🚀 Starting MoD Core Safety Backend..."
 
-# Check if running as root
+# Check if running as root (optional for containers)
 if [ "$EUID" -ne 0 ]; then
-    echo "❌ Please run as root or with sudo"
-    exit 1
+    echo "⚠️  Not running as root - some services may require root privileges"
 fi
 
 # Create necessary directories
@@ -26,24 +25,42 @@ if [ ! -f /opt/keycloak/bin/kc.sh ]; then
     cd /workspace && ./setup_services.sh
 fi
 
+# Start core services first
+echo "🎯 Starting core services..."
+supervisord -c /workspace/configs/supervisor-mod-core.conf
+
+# Wait for database to start
+echo "⏳ Waiting for database to start..."
+sleep 10
+
 # Initialize database if needed
 echo "🗄️  Checking database initialization..."
-cd /workspace && source venv/bin/activate && python -c "
+cd /workspace && source venv/bin/activate
+export PYTHONPATH="/workspace:$PYTHONPATH"
+
+# Import all models first to register them
+python -c "from app.models import *; print('Models imported successfully')"
+
+# Then check if database needs initialization
+python -c "
 from app.core.database import SessionLocal
 from app.models.tourist import Tourist
-db = SessionLocal()
-count = db.query(Tourist).count()
-if count == 0:
-    print('Initializing database...')
+try:
+    db = SessionLocal()
+    count = db.query(Tourist).count()
+    if count == 0:
+        print('Initializing database...')
+        exec(open('init_database.py').read())
+    else:
+        print(f'Database already initialized with {count} tourists')
+    db.close()
+except Exception as e:
+    print(f'Database initialization error: {e}')
+    print('Running full database initialization...')
     exec(open('init_database.py').read())
-else:
-    print(f'Database already initialized with {count} tourists')
-db.close()
 "
 
-# Start all services with supervisor
-echo "🎯 Starting all MoD Core services..."
-supervisord -c /workspace/configs/supervisor-mod-core.conf
+# Services are already started via supervisord above
 
 # Wait for services to start
 echo "⏳ Waiting for services to initialize..."

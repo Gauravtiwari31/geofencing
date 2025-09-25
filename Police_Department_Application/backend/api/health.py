@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 import structlog
 
 from config import settings
+from services.mod_core_client import mod_core_client
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -92,36 +93,40 @@ async def check_certificates() -> Dict[str, Any]:
 async def check_mod_core() -> Dict[str, Any]:
     """Check MoD Core connectivity (basic reachability)"""
     try:
-        import httpx
-        
-        # For now, just check if we can resolve the host
-        # In production, this would test the actual SSE endpoint
-        async with httpx.AsyncClient(timeout=5.0, verify=False) as client:
-            try:
-                # Try to connect (this will likely fail in development, but tests connectivity)
-                response = await client.get(f"{settings.mod_core_url}/health")
-                return {
-                    "status": "healthy",
-                    "response_time_ms": "< 5000",
-                    "details": f"MoD Core reachable at {settings.mod_core_url}"
-                }
-            except httpx.ConnectError:
-                return {
-                    "status": "degraded",
-                    "details": f"Cannot reach MoD Core at {settings.mod_core_url} (expected in development)"
-                }
-            except Exception as e:
-                return {
-                    "status": "degraded",
-                    "error": str(e),
-                    "details": "MoD Core connectivity check failed"
-                }
+        if not settings.mod_core_enabled:
+            return {
+                "status": "disabled",
+                "details": "MoD Core integration disabled via configuration"
+            }
+
+        status = mod_core_client.health_status()
+        state = status.get("state", "unknown")
+
+        if state == "connected":
+            overall_status = "healthy"
+        elif state in {"initializing", "stopped"}:
+            overall_status = "degraded"
+        elif state == "disabled":
+            overall_status = "disabled"
+        else:
+            overall_status = "degraded"
+
+        return {
+            "status": overall_status,
+            "state": state,
+            "last_event_received_at": status.get("last_event_received_at"),
+            "last_successful_connect_at": status.get("last_successful_connect_at"),
+            "last_error": status.get("last_error"),
+            "last_error_at": status.get("last_error_at"),
+            "active_alerts": status.get("active_alerts"),
+            "totals": status.get("totals", {}),
+        }
     except Exception as e:
         logger.error("MoD Core health check failed", error=str(e))
         return {
             "status": "unhealthy",
             "error": str(e),
-            "details": "Unable to check MoD Core connectivity"
+            "details": "Unable to retrieve MoD Core client status"
         }
 
 

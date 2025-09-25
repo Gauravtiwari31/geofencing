@@ -24,8 +24,8 @@ class Incident(Base):
     alert_id = Column(BigInteger, primary_key=True, index=True)
     tourist_id = Column(String(36), nullable=False, index=True)
     type = Column(
-        String(20), 
-        nullable=False, 
+        String(30),
+        nullable=False,
         index=True
     )
     created_at = Column(DateTime(timezone=True), nullable=False, index=True)
@@ -37,7 +37,7 @@ class Incident(Base):
     )
     last_update_at = Column(DateTime(timezone=True), nullable=False, default=func.now())
     location = Column(JSONB, nullable=True)  # {"lat": float, "lng": float, "accuracy": int}
-    score_band = Column(String(10), nullable=True)
+    score_band = Column(String(20), nullable=True)
     details = Column(Text, nullable=True)
 
     # Relationships
@@ -45,7 +45,7 @@ class Incident(Base):
 
     # Constraints
     __table_args__ = (
-        CheckConstraint("type IN ('SOS', 'RED_ZONE', 'DISCONNECTION')", name='check_incident_type'),
+        CheckConstraint("type IN ('SOS', 'RED_ZONE', 'DISCONNECTION', 'GEOFENCE', 'INACTIVITY')", name='check_incident_type'),
         CheckConstraint("last_status IN ('ACTIVE', 'ACKNOWLEDGED', 'RESOLVED')", name='check_incident_status'),
         CheckConstraint("score_band IN ('HIGH', 'MEDIUM', 'LOW') OR score_band IS NULL", name='check_score_band'),
     )

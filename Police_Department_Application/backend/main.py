@@ -16,6 +16,7 @@ import structlog
 
 from config import settings
 from api.health import router as health_router
+from services import mod_core_client
 
 
 # Configure logging
@@ -61,8 +62,12 @@ async def lifespan(app: FastAPI):
         logger.error("❌ Database initialization failed", error=str(e))
         # Continue startup but mark as degraded
     
-    # TODO: Start MoD Core SSE stream consumer
-    # TODO: Validate certificates exist
+    # Start MoD Core SSE stream consumer
+    try:
+        await mod_core_client.start()
+        logger.info("📡 MoD Core stream consumer started")
+    except Exception as e:
+        logger.error("❌ Failed to start MoD Core stream consumer", error=str(e))
     
     yield
     
@@ -74,7 +79,12 @@ async def lifespan(app: FastAPI):
         logger.info("✅ Database connections closed")
     except Exception as e:
         logger.error("❌ Error closing database", error=str(e))
-    # TODO: Stop SSE stream
+    # Stop MoD Core stream
+    try:
+        await mod_core_client.stop()
+        logger.info("📡 MoD Core stream consumer stopped")
+    except Exception as e:
+        logger.error("❌ Error stopping MoD Core stream consumer", error=str(e))
 
 
 # Create FastAPI application

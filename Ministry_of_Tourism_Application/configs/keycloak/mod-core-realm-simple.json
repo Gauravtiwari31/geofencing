@@ -1,0 +1,185 @@
+{
+  "realm": "mod-core",
+  "displayName": "MoD Core Tourist Safety System",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 3600,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "requiredCredentials": ["password"],
+  "defaultSignatureAlgorithm": "RS256",
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@modcore.local",
+      "firstName": "System",
+      "lastName": "Administrator",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["admin"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "username": "police-officer",
+      "enabled": true,
+      "email": "police@modcore.local",
+      "firstName": "Police",
+      "lastName": "Officer",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "police123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["POLICE"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    },
+    {
+      "username": "tourist-demo",
+      "enabled": true,
+      "email": "tourist@modcore.local",
+      "firstName": "Demo",
+      "lastName": "Tourist",
+      "attributes": {
+        "tourist_id": ["demo-tourist-uuid-123"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "tourist123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["TOURIST"],
+      "clientRoles": {
+        "account": ["view-profile", "manage-account"]
+      }
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "ADMIN",
+        "description": "Administrative access to MoD Core system"
+      },
+      {
+        "name": "POLICE",
+        "description": "Police monitoring and alert acknowledgment access"
+      },
+      {
+        "name": "TOURIST", 
+        "description": "Tourist mobile app access for telemetry and safety"
+      },
+      {
+        "name": "admin",
+        "description": "Realm admin role"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "mod-api",
+      "name": "MoD Core API Backend",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "mod-api-secret-key-2025",
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "defaultClientScopes": ["web-origins", "role_list", "profile", "roles", "email"],
+      "optionalClientScopes": ["address", "phone", "offline_access"]
+    },
+    {
+      "clientId": "tourist-app",
+      "name": "Tourist Mobile Application",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "tourist-app-secret-2025",
+      "redirectUris": [
+        "http://localhost:2040/*",
+        "https://localhost:2040/*"
+      ],
+      "webOrigins": ["*"],
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "defaultClientScopes": ["web-origins", "role_list", "profile", "roles", "email"],
+      "optionalClientScopes": ["address", "phone", "offline_access"]
+    },
+    {
+      "clientId": "police-sedi",
+      "name": "Police SEDI Application",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "police-sedi-secret-2025",
+      "redirectUris": [
+        "http://localhost:2035/*",
+        "https://localhost:2035/*"
+      ],
+      "webOrigins": ["*"],
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "defaultClientScopes": ["web-origins", "role_list", "profile", "roles", "email"],
+      "optionalClientScopes": ["address", "phone", "offline_access"]
+    }
+  ],
+  "scopeMappings": [
+    {
+      "client": "mod-api",
+      "roles": ["ADMIN", "POLICE", "TOURIST"]
+    },
+    {
+      "client": "tourist-app", 
+      "roles": ["TOURIST"]
+    },
+    {
+      "client": "police-sedi",
+      "roles": ["POLICE"]
+    }
+  ],
+  "eventsEnabled": true,
+  "eventsListeners": ["jboss-logging"],
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": false
+}

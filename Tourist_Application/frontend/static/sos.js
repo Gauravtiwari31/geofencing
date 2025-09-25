@@ -80,6 +80,12 @@ class SOSController {
                     `🚨 SOS ACTIVATED at ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
                     'error'
                 );
+                
+                if (result.mod_core_forwarded && result.mod_core_forwarded.status === 'success') {
+                    addLogEntry('MoD Core ingest succeeded', 'success');
+                } else if (result.mod_core_forwarded && result.mod_core_forwarded.status !== 'success') {
+                    addLogEntry(`MoD Core forwarding: ${result.mod_core_forwarded.status}`, 'warning');
+                }
 
                 // Flash the button
                 this.flashButton();

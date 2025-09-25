@@ -1,0 +1,17 @@
+{
+	"ulid": "01K613YB1X317XJGZR3TJ0376P",
+	"minTime": 1758816002181,
+	"maxTime": 1758823200000,
+	"stats": {
+		"numSamples": 279718,
+		"numSeries": 1074,
+		"numChunks": 2741
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01K613YB1X317XJGZR3TJ0376P"
+		]
+	},
+	"version": 1
+}

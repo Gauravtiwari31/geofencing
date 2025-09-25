@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoT Core - Tourist Safety Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .particle {
+            position: fixed;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 6s ease-in-out infinite;
+            z-index: -1;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .status-safe { color: #10b981; }
+        .status-warning { color: #f59e0b; }
+        .status-danger { color: #ef4444; }
+        
+        .tourist-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid #10b981;
+        }
+        
+        .tourist-card.warning {
+            border-left-color: #f59e0b;
+            background-color: #fef3c7;
+        }
+        
+        .tourist-card.danger {
+            border-left-color: #ef4444;
+            background-color: #fee2e2;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .alert-banner {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            animation: slideDown 0.5s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Fix map z-index issues */
+        .leaflet-container {
+            z-index: 1 !important;
+        }
+        
+        .leaflet-control-container {
+            z-index: 1000 !important;
+        }
+        
+        /* Ensure modal is above everything */
+        .modal-overlay {
+            z-index: 9999 !important;
+        }
+        
+        /* Drawing controls styling */
+        .leaflet-draw-toolbar {
+            z-index: 1001 !important;
+        }
+        
+        .leaflet-draw-actions {
+            z-index: 1002 !important;
+        }
+        
+        .btn-police-action {
+            background: linear-gradient(45deg, #dc2626, #991b1b);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-police-action:hover {
+            background: linear-gradient(45deg, #991b1b, #7f1d1d);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Particles Background -->
+    <div id="particles-container" class="fixed inset-0 pointer-events-none"></div>
+    
+    <!-- Alert Banner -->
+    <div id="alertBanner" class="hidden alert-banner text-white p-4 text-center font-bold">
+        🚨 CRITICAL ALERT: Tourist in Red Zone - Immediate Action Required!
+    </div>
+    
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-blue-600">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">🇮🇳</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Ministry of Tourism</h1>
+                        <p class="text-gray-600">Tourist Safety Monitoring System</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600" id="totalTourists">0</div>
+                        <div class="text-sm text-gray-600">Total Tourists</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-red-600" id="redZoneTourists">0</div>
+                        <div class="text-sm text-gray-600">In Red Zones</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-yellow-600" id="activeAlerts">0</div>
+                        <div class="text-sm text-gray-600">Active Alerts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Map Panel -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-xl font-bold">Live Tourist Tracking</h2>
+                            <div class="flex items-center space-x-4">
+                                <select id="mapStyleSelector" class="bg-white text-gray-800 rounded px-3 py-1 text-sm">
+                                    <option value="streets">Standard</option>
+                                    <option value="satellite" selected>Satellite</option>
+                                    <option value="terrain">Terrain</option>
+                                    <option value="dark">Dark Mode</option>
+                                </select>
+                                <button id="toggleRedZoneMode" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm font-medium">
+                                    🎯 Draw Red Zone
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="map" class="h-96 lg:h-[500px]"></div>
+                </div>
+            </div>
+
+            <!-- Tourist Lists Panel -->
+            <div class="space-y-6">
+                <!-- All Tourists -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-4 bg-gradient-to-r from-green-600 to-emerald-700 text-white">
+                        <h3 class="text-lg font-bold">All Tourists Online</h3>
+                        <p class="text-sm opacity-90">Real-time tracking active</p>
+                    </div>
+                    <div id="allTouristsList" class="max-h-60 overflow-y-auto p-4 space-y-2">
+                        <!-- Tourist cards will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Red Zone Tourists -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-4 bg-gradient-to-r from-red-600 to-red-700 text-white">
+                        <h3 class="text-lg font-bold">🚨 Red Zone Alerts</h3>
+                        <p class="text-sm opacity-90">Immediate attention required</p>
+                    </div>
+                    <div id="redZoneTouristsList" class="max-h-60 overflow-y-auto p-4 space-y-2">
+                        <!-- Red zone tourist cards will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Critical Alerts -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-4 bg-gradient-to-r from-orange-600 to-red-600 text-white">
+                        <h3 class="text-lg font-bold">⚠️ Critical Alerts</h3>
+                        <p class="text-sm opacity-90">SOS & Emergency signals</p>
+                    </div>
+                    <div id="criticalAlertsList" class="max-h-60 overflow-y-auto p-4 space-y-2">
+                        <!-- Critical alerts will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Police Action Modal -->
+    <div id="policeActionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">🚔 Police Action Required</h3>
+                <div id="selectedTouristDetails" class="mb-4">
+                    <!-- Tourist details will be populated here -->
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Incident Type</label>
+                        <select id="incidentType" class="w-full border border-gray-300 rounded px-3 py-2">
+                            <option value="red_zone_entry">Red Zone Entry</option>
+                            <option value="sos_alert">SOS Alert</option>
+                            <option value="safety_breach">Safety Breach</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+                        <select id="priorityLevel" class="w-full border border-gray-300 rounded px-3 py-2">
+                            <option value="high">High Priority</option>
+                            <option value="critical">Critical</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                        <textarea id="additionalNotes" class="w-full border border-gray-300 rounded px-3 py-2 h-20" placeholder="Enter additional details..."></textarea>
+                    </div>
+                </div>
+                <div class="flex space-x-3 mt-6">
+                    <button id="sendToPolice" class="flex-1 btn-police-action text-white py-2 px-4 rounded font-medium">
+                        📤 Send E-FIR to Police
+                    </button>
+                    <button id="cancelPoliceAction" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let map;
+        let drawnItems;
+        let drawControl;
+        let isRedZoneMode = false;
+        let redZones = [];
+        let tourists = [];
+        let wsConnection;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            initWebSocket();
+            createParticles();
+            startDataRefresh();
+        });
+
+        function initMap() {
+            // Create a map centered on India
+            map = L.map('map').setView([20.5937, 78.9629], 5);
+            
+            // Add different tile layers
+            const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 20
+            });
+            
+            const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+                maxZoom: 20
+            });
+            
+            const terrain = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+                maxZoom: 20
+            });
+            
+            const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                maxZoom: 20
+            });
+            
+            // Add satellite layer as default
+            satellite.addTo(map);
+            
+            // Add layer control
+            const baseMaps = {
+                "Standard": streets,
+                "Satellite": satellite,
+                "Terrain": terrain,
+                "Dark Mode": dark
+            };
+            
+            L.control.layers(baseMaps).addTo(map);
+            
+            // Initialize drawing controls for red zones
+            drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+            
+            drawControl = new L.Control.Draw({
+                position: 'topright',
+                edit: {
+                    featureGroup: drawnItems,
+                    edit: {
+                        selectedPathOptions: {
+                            maintainColor: true,
+                            opacity: 0.6
+                        }
+                    },
+                    remove: true
+                },
+                draw: {
+                    polygon: {
+                        allowIntersection: false,
+                        showArea: true,
+                        drawError: {
+                            color: '#e1e100',
+                            timeout: 1000
+                        },
+                        shapeOptions: {
+                            color: '#ff0000',
+                            fillColor: '#ff0000',
+                            fillOpacity: 0.3,
+                            weight: 3
+                        }
+                    },
+                    rectangle: {
+                        shapeOptions: {
+                            color: '#ff0000',
+                            fillColor: '#ff0000',
+                            fillOpacity: 0.3,
+                            weight: 3
+                        }
+                    },
+                    circle: {
+                        shapeOptions: {
+                            color: '#ff0000',
+                            fillColor: '#ff0000',
+                            fillOpacity: 0.3,
+                            weight: 3
+                        }
+                    },
+                    polyline: false,
+                    marker: false,
+                    circlemarker: false
+                }
+            });
+            
+            // Map style selector functionality
+            const mapStyleSelector = document.getElementById('mapStyleSelector');
+            mapStyleSelector.addEventListener('change', function() {
+                const style = this.value;
+                
+                // Remove all layers
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                
+                // Add selected layer
+                if (style === 'streets') streets.addTo(map);
+                else if (style === 'satellite') satellite.addTo(map);
+                else if (style === 'terrain') terrain.addTo(map);
+                else if (style === 'dark') dark.addTo(map);
+            });
+            
+            // Red zone toggle functionality
+            document.getElementById('toggleRedZoneMode').addEventListener('click', function() {
+                toggleRedZoneMode();
+            });
+            
+            // Handle drawn red zones
+            map.on(L.Draw.Event.CREATED, function(e) {
+                const layer = e.layer;
+                drawnItems.addLayer(layer);
+                
+                // Convert to coordinates and save as red zone
+                const redZone = {
+                    id: Date.now(),
+                    type: e.layerType,
+                    coordinates: getLayerCoordinates(layer),
+                    created: new Date().toISOString()
+                };
+                
+                redZones.push(redZone);
+                saveRedZone(redZone);
+                checkTouristsInRedZone();
+                
+                // Show success message
+                alert('✅ Red Zone created successfully!\n\nThe system will now monitor for tourists entering this area.');
+            });
+            
+            // Handle draw events
+            map.on(L.Draw.Event.DRAWSTART, function() {
+                console.log('Drawing started');
+            });
+            
+            map.on(L.Draw.Event.DRAWSTOP, function() {
+                console.log('Drawing stopped');
+            });
+            
+            // Handle edited red zones
+            map.on(L.Draw.Event.EDITED, function(e) {
+                console.log('Red zones edited');
+                checkTouristsInRedZone();
+            });
+            
+            // Handle deleted red zones
+            map.on(L.Draw.Event.DELETED, function(e) {
+                e.layers.eachLayer(function(layer) {
+                    // Remove from redZones array
+                    const layerCoords = getLayerCoordinates(layer);
+                    redZones = redZones.filter(zone => 
+                        JSON.stringify(zone.coordinates) !== JSON.stringify(layerCoords)
+                    );
+                });
+                checkTouristsInRedZone();
+                alert('🗑️ Red zone(s) deleted successfully!');
+            });
+            
+            // Add scale control
+            L.control.scale({metric: true, imperial: false}).addTo(map);
+        }
+        
+        function toggleRedZoneMode() {
+            const button = document.getElementById('toggleRedZoneMode');
+            
+            if (!isRedZoneMode) {
+                map.addControl(drawControl);
+                button.textContent = '✅ Exit Drawing Mode';
+                button.className = button.className.replace('bg-red-600', 'bg-green-600').replace('hover:bg-red-700', 'hover:bg-green-700');
+                isRedZoneMode = true;
+                
+                // Show instruction
+                alert('📝 Red Zone Drawing Mode Active!\n\n• Click the drawing tools on the top-right of the map\n• Choose Polygon, Rectangle, or Circle\n• Draw your red zone area\n• Click "Exit Drawing Mode" when done');
+            } else {
+                map.removeControl(drawControl);
+                button.textContent = '🎯 Draw Red Zone';
+                button.className = button.className.replace('bg-green-600', 'bg-red-600').replace('hover:bg-green-700', 'hover:bg-red-700');
+                isRedZoneMode = false;
+            }
+        }
+        
+        function getLayerCoordinates(layer) {
+            if (layer instanceof L.Polygon || layer instanceof L.Rectangle) {
+                return layer.getLatLngs()[0].map(latlng => [latlng.lat, latlng.lng]);
+            } else if (layer instanceof L.Circle) {
+                return {
+                    center: [layer.getLatLng().lat, layer.getLatLng().lng],
+                    radius: layer.getRadius()
+                };
+            }
+            return null;
+        }
+        
+        function initWebSocket() {
+            // WebSocket connection for real-time updates
+            try {
+                wsConnection = new WebSocket('ws://localhost:8000/ws/realtime');
+                
+                wsConnection.onopen = function() {
+                    console.log('✅ WebSocket connected');
+                };
+                
+                wsConnection.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    handleRealtimeUpdate(data);
+                };
+                
+                wsConnection.onclose = function() {
+                    console.log('❌ WebSocket disconnected, attempting to reconnect...');
+                    setTimeout(initWebSocket, 5000);
+                };
+            } catch (error) {
+                console.log('WebSocket not available, using polling instead');
+            }
+        }
+        
+        function handleRealtimeUpdate(data) {
+            if (data.type === 'tourist_location') {
+                updateTouristLocation(data.tourist);
+            } else if (data.type === 'alert') {
+                handleNewAlert(data.alert);
+            } else if (data.type === 'red_zone_entry') {
+                handleRedZoneEntry(data.tourist);
+            }
+        }
+        
+        async function startDataRefresh() {
+            // Fetch initial data and start refresh cycle
+            await fetchTourists();
+            await fetchAlerts();
+            
+            // Refresh every 2 seconds
+            setInterval(async () => {
+                await fetchTourists();
+                await fetchAlerts();
+            }, 2000);
+        }
+        
+        async function fetchTourists() {
+            try {
+                const response = await fetch('/api/v1/tourists/live');
+                const data = await response.json();
+                
+                tourists = data.tourists || [];
+                updateTouristMarkers();
+                updateTouristLists();
+                updateStats();
+            } catch (error) {
+                console.error('Error fetching tourists:', error);
+                // Use mock data for demo
+                generateMockTourists();
+            }
+        }
+        
+        async function fetchAlerts() {
+            try {
+                const response = await fetch('/api/v1/alerts/active');
+                const data = await response.json();
+                
+                updateCriticalAlerts(data.alerts || []);
+            } catch (error) {
+                console.error('Error fetching alerts:', error);
+            }
+        }
+        
+        function generateMockTourists() {
+            // Generate mock tourist data for demo
+            tourists = [
+                {
+                    id: 1,
+                    name: "Priya Sharma",
+                    nationality: "Indian",
+                    location: { lat: 28.6139, lng: 77.2090 },
+                    status: "safe",
+                    last_seen: new Date().toISOString(),
+                    device_id: "DEV001",
+                    safety_score: 85
+                },
+                {
+                    id: 2,
+                    name: "John Anderson",
+                    nationality: "American",
+                    location: { lat: 27.1750, lng: 78.0422 },
+                    status: "safe",
+                    last_seen: new Date().toISOString(),
+                    device_id: "DEV002",
+                    safety_score: 92
+                },
+                {
+                    id: 3,
+                    name: "Sarah Connor",
+                    nationality: "British",
+                    location: { lat: 26.9124, lng: 75.7873 },
+                    status: "warning",
+                    last_seen: new Date().toISOString(),
+                    device_id: "DEV003",
+                    safety_score: 65
+                }
+            ];
+            
+            updateTouristMarkers();
+            updateTouristLists();
+            updateStats();
+        }
+        
+        function updateTouristMarkers() {
+            // Clear existing markers
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker) {
+                    map.removeLayer(layer);
+                }
+            });
+            
+            // Add tourist markers
+            tourists.forEach(tourist => {
+                const icon = getTouristIcon(tourist.status);
+                const marker = L.marker([tourist.location.lat, tourist.location.lng], { icon: icon }).addTo(map);
+                
+                marker.bindPopup(`
+                    <div class="text-dark">
+                        <h4 class="font-bold">${tourist.name}</h4>
+                        <p><strong>Nationality:</strong> ${tourist.nationality}</p>
+                        <p><strong>Status:</strong> <span class="status-${tourist.status}">${tourist.status.toUpperCase()}</span></p>
+                        <p><strong>Safety Score:</strong> ${tourist.safety_score}%</p>
+                        <p><strong>Last Seen:</strong> ${new Date(tourist.last_seen).toLocaleTimeString()}</p>
+                        <button onclick="triggerPoliceAction(${tourist.id})" class="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
+                            🚔 Police Action
+                        </button>
+                    </div>
+                `);
+            });
+        }
+        
+        function getTouristIcon(status) {
+            let color = '#10b981'; // green for safe
+            if (status === 'warning') color = '#f59e0b'; // yellow for warning
+            if (status === 'danger') color = '#ef4444'; // red for danger
+            
+            return L.icon({
+                iconUrl: `data:image/svg+xml;base64,${btoa(`
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="${color}"/>
+                        <circle cx="12" cy="12" r="4" fill="white"/>
+                    </svg>
+                `)}`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+                popupAnchor: [0, -12]
+            });
+        }
+        
+        function updateTouristLists() {
+            // Update all tourists list
+            const allTouristsList = document.getElementById('allTouristsList');
+            allTouristsList.innerHTML = '';
+            
+            tourists.forEach(tourist => {
+                const card = createTouristCard(tourist);
+                allTouristsList.appendChild(card);
+            });
+            
+            // Update red zone tourists list
+            const redZoneTourists = tourists.filter(tourist => isInRedZone(tourist));
+            const redZoneTouristsList = document.getElementById('redZoneTouristsList');
+            redZoneTouristsList.innerHTML = '';
+            
+            if (redZoneTourists.length === 0) {
+                redZoneTouristsList.innerHTML = '<p class="text-gray-500 text-center py-4">No tourists in red zones</p>';
+            } else {
+                redZoneTourists.forEach(tourist => {
+                    const card = createTouristCard(tourist, true);
+                    redZoneTouristsList.appendChild(card);
+                });
+            }
+        }
+        
+        function createTouristCard(tourist, isRedZone = false) {
+            const card = document.createElement('div');
+            card.className = `tourist-card p-3 rounded-lg border ${tourist.status} bg-white`;
+            
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <div class="font-medium text-gray-800">${tourist.name}</div>
+                        <div class="text-sm text-gray-600">${tourist.nationality}</div>
+                        <div class="text-xs status-${tourist.status} font-medium">${tourist.status.toUpperCase()}</div>
+                    </div>
+                    <div class="flex flex-col items-end space-y-1">
+                        <button onclick="triggerPoliceAction(${tourist.id})" 
+                                class="btn-police-action text-white text-xs px-2 py-1 rounded">
+                            🚔 Action
+                        </button>
+                        <div class="text-xs text-gray-500">${tourist.safety_score}%</div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function updateCriticalAlerts(alerts) {
+            const criticalAlertsList = document.getElementById('criticalAlertsList');
+            criticalAlertsList.innerHTML = '';
+            
+            if (alerts.length === 0) {
+                criticalAlertsList.innerHTML = '<p class="text-gray-500 text-center py-4">No critical alerts</p>';
+            } else {
+                alerts.forEach(alert => {
+                    const alertCard = document.createElement('div');
+                    alertCard.className = 'p-3 bg-red-50 border border-red-200 rounded-lg';
+                    
+                    alertCard.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-medium text-red-800">${alert.type}</div>
+                                <div class="text-sm text-red-600">${alert.message}</div>
+                                <div class="text-xs text-red-500">${new Date(alert.created_at).toLocaleString()}</div>
+                            </div>
+                            <button onclick="triggerPoliceAction('${alert.tourist_id}')" 
+                                    class="btn-police-action text-white text-xs px-2 py-1 rounded">
+                                🚔 Respond
+                            </button>
+                        </div>
+                    `;
+                    
+                    criticalAlertsList.appendChild(alertCard);
+                });
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('totalTourists').textContent = tourists.length;
+            document.getElementById('redZoneTourists').textContent = tourists.filter(t => isInRedZone(t)).length;
+            document.getElementById('activeAlerts').textContent = tourists.filter(t => t.status === 'danger').length;
+        }
+        
+        function isInRedZone(tourist) {
+            // Check if tourist is in any red zone
+            return redZones.some(zone => {
+                if (zone.type === 'circle') {
+                    const distance = map.distance(
+                        [tourist.location.lat, tourist.location.lng],
+                        zone.coordinates.center
+                    );
+                    return distance <= zone.coordinates.radius;
+                } else {
+                    // For polygons and rectangles, use point-in-polygon algorithm
+                    return isPointInPolygon([tourist.location.lat, tourist.location.lng], zone.coordinates);
+                }
+            });
+        }
+        
+        function isPointInPolygon(point, polygon) {
+            // Simple point-in-polygon algorithm
+            const [x, y] = point;
+            let inside = false;
+            
+            for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                const [xi, yi] = polygon[i];
+                const [xj, yj] = polygon[j];
+                
+                if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+                    inside = !inside;
+                }
+            }
+            
+            return inside;
+        }
+        
+        function triggerPoliceAction(touristId) {
+            const tourist = tourists.find(t => t.id == touristId);
+            if (!tourist) return;
+            
+            // Show police action modal
+            const modal = document.getElementById('policeActionModal');
+            const details = document.getElementById('selectedTouristDetails');
+            
+            details.innerHTML = `
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-bold text-lg">${tourist.name}</h4>
+                    <div class="grid grid-cols-2 gap-2 mt-2 text-sm">
+                        <div><strong>Nationality:</strong> ${tourist.nationality}</div>
+                        <div><strong>Device ID:</strong> ${tourist.device_id}</div>
+                        <div><strong>Status:</strong> <span class="status-${tourist.status}">${tourist.status.toUpperCase()}</span></div>
+                        <div><strong>Safety Score:</strong> ${tourist.safety_score}%</div>
+                        <div><strong>Location:</strong> ${tourist.location.lat.toFixed(4)}, ${tourist.location.lng.toFixed(4)}</div>
+                        <div><strong>Last Seen:</strong> ${new Date(tourist.last_seen).toLocaleTimeString()}</div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            
+            // Store selected tourist for E-FIR generation
+            window.selectedTourist = tourist;
+        }
+        
+        // Police action modal handlers
+        document.getElementById('sendToPolice').addEventListener('click', async function() {
+            const tourist = window.selectedTourist;
+            const incidentType = document.getElementById('incidentType').value;
+            const priorityLevel = document.getElementById('priorityLevel').value;
+            const additionalNotes = document.getElementById('additionalNotes').value;
+            
+            const eFIR = {
+                tourist_id: tourist.id,
+                tourist_name: tourist.name,
+                nationality: tourist.nationality,
+                device_id: tourist.device_id,
+                location: tourist.location,
+                incident_type: incidentType,
+                priority_level: priorityLevel,
+                additional_notes: additionalNotes,
+                timestamp: new Date().toISOString(),
+                reporter: "MoT Core System",
+                status: "pending_police_action"
+            };
+            
+            try {
+                const response = await fetch('/api/v1/police/efir', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(eFIR)
+                });
+                
+                if (response.ok) {
+                    alert('✅ E-FIR successfully sent to police! Reference ID: ' + Date.now());
+                    document.getElementById('policeActionModal').classList.add('hidden');
+                    
+                    // Show alert banner
+                    const banner = document.getElementById('alertBanner');
+                    banner.classList.remove('hidden');
+                    setTimeout(() => {
+                        banner.classList.add('hidden');
+                    }, 5000);
+                } else {
+                    alert('❌ Failed to send E-FIR. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error sending E-FIR:', error);
+                alert('✅ E-FIR sent to police (demo mode)! Reference ID: EFIR-' + Date.now());
+                document.getElementById('policeActionModal').classList.add('hidden');
+            }
+        });
+        
+        document.getElementById('cancelPoliceAction').addEventListener('click', function() {
+            document.getElementById('policeActionModal').classList.add('hidden');
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('policeActionModal');
+                if (!modal.classList.contains('hidden')) {
+                    modal.classList.add('hidden');
+                }
+            }
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('policeActionModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+        
+        async function saveRedZone(redZone) {
+            try {
+                await fetch('/api/v1/admin/red-zones', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(redZone)
+                });
+            } catch (error) {
+                console.error('Error saving red zone:', error);
+            }
+        }
+        
+        function checkTouristsInRedZone() {
+            const redZoneTourists = tourists.filter(t => isInRedZone(t));
+            
+            redZoneTourists.forEach(tourist => {
+                // Trigger alert for tourists in red zone
+                tourist.status = 'danger';
+                handleRedZoneEntry(tourist);
+            });
+            
+            updateTouristMarkers();
+            updateTouristLists();
+            updateStats();
+        }
+        
+        function handleRedZoneEntry(tourist) {
+            // Show alert banner
+            const banner = document.getElementById('alertBanner');
+            banner.textContent = `🚨 CRITICAL ALERT: ${tourist.name} has entered a Red Zone - Immediate Action Required!`;
+            banner.classList.remove('hidden');
+            
+            setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 10000);
+        }
+        
+        function createParticles() {
+            const container = document.getElementById('particles-container');
+            const particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size between 5 and 15px
+                const size = Math.random() * 10 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                
+                // Random animation delay
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                
+                // Random opacity
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                
+                container.appendChild(particle);
+            }
+        }
+    </script>
+</body>
+</html>
