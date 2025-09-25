@@ -26,4 +26,10 @@ web-build/
 *.ipa
 *.dSYM.zip
 *.pyc
-/Ministry_of_Tourism_Application/venv/lib
+/Ministry_of_Tourism_Application/venv/
+/Ministry_of_Tourism_Application/logs/
+/Ministry_of_Tourism_Application/supervisord.pid
+
+# Project-level virtual environments
+venv/
+.venv/

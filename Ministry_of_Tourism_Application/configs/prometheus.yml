@@ -1,0 +1,88 @@
+# Prometheus Configuration for MoD Core
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'mod-core'
+    environment: 'production'
+
+# Alertmanager configuration (optional)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "/workspace/configs/prometheus-rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:2028']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # MoT Core API
+  - job_name: 'mot-core-api'
+    static_configs:
+      - targets: ['localhost:2030']
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    honor_labels: true
+
+  # PostgreSQL (using postgres_exporter if installed)
+  - job_name: 'postgresql'
+    static_configs:
+      # postgres_exporter not available - using direct DB monitoring
+    metrics_path: /metrics
+    scrape_interval: 30s
+    # Optional: only scrape if postgres_exporter is running
+    honor_labels: true
+
+  # Nginx metrics
+  - job_name: 'nginx'
+    static_configs:
+      # nginx metrics via API endpoint
+    metrics_path: /nginx_status
+    scrape_interval: 30s
+
+  # Node metrics (system level)
+  - job_name: 'node'
+    static_configs:
+      # node_exporter not available - using container metrics
+    metrics_path: /metrics
+    scrape_interval: 30s
+    # Optional: only scrape if node_exporter is running
+
+  # Custom application metrics
+  - job_name: 'mot-core-business-metrics'
+    static_configs:
+      - targets: ['localhost:2030']
+    metrics_path: /metrics
+    scrape_interval: 5s  # More frequent for real-time safety monitoring
+    params:
+      format: ['prometheus']
+    honor_labels: true
+    
+    # Relabeling for better organization
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'mod_core_(.*)'
+        target_label: '__name__'
+        replacement: '${1}'
+        
+      - source_labels: [job]
+        target_label: 'service'
+        replacement: 'mod-core'
+
+# Remote write configuration (for external monitoring)
+# remote_write:
+#   - url: "https://prometheus-remote-write-endpoint"
+#     basic_auth:
+#       username: username
+#       password: password

@@ -1,0 +1,140 @@
+# Prometheus Alerting Rules for MoD Core
+groups:
+  - name: mod-core-critical
+    interval: 15s
+    rules:
+      # SOS Alert Latency
+      - alert: HighSOSResponseTime
+        expr: histogram_quantile(0.95, rate(sos_response_time_seconds_bucket[5m])) > 3
+        for: 30s
+        labels:
+          severity: critical
+          service: mod-core
+        annotations:
+          summary: "High SOS response time detected"
+          description: "95th percentile SOS response time is {{ $value }}s, above the 3s threshold"
+
+      # API Error Rate
+      - alert: HighAPIErrorRate
+        expr: rate(api_requests_total{status_code=~"5.."}[5m]) / rate(api_requests_total[5m]) > 0.01
+        for: 2m
+        labels:
+          severity: critical
+          service: mod-core
+        annotations:
+          summary: "High API error rate detected"
+          description: "API error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+      # Database Connection Issues
+      - alert: DatabaseConnectionFailure
+        expr: database_connections_active == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: mod-core
+        annotations:
+          summary: "Database connection failure"
+          description: "No active database connections detected"
+
+      # SOS Alerts Not Acknowledged
+      - alert: UnacknowledgedSOSAlerts
+        expr: active_alerts_total{alert_type="sos"} > 0
+        for: 2m
+        labels:
+          severity: critical
+          service: mod-core
+        annotations:
+          summary: "SOS alerts not acknowledged"
+          description: "{{ $value }} SOS alerts have been active for more than 2 minutes"
+
+  - name: mod-core-warning
+    interval: 30s
+    rules:
+      # High Response Time
+      - alert: HighAPIResponseTime
+        expr: histogram_quantile(0.95, rate(api_request_duration_seconds_bucket[10m])) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: mod-core
+        annotations:
+          summary: "High API response time"
+          description: "95th percentile API response time is {{ $value }}s"
+
+      # Low Battery Devices
+      - alert: HighLowBatteryDevices
+        expr: devices_battery_low_total > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: mod-core
+        annotations:
+          summary: "Many devices with low battery"
+          description: "{{ $value }} devices have battery below 20%"
+
+      # Many Tourists Near Red Zones
+      - alert: ManyTouristsNearRedZones
+        expr: near_red_zone_total > 5
+        for: 10m
+        labels:
+          severity: warning
+          service: mod-core
+        annotations:
+          summary: "Multiple tourists near red zones"
+          description: "{{ $value }} tourists are currently near red zones"
+
+      # High Geofence Violation Rate
+      - alert: HighGeofenceViolationRate
+        expr: rate(geofence_hits_total[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: mod-core
+        annotations:
+          summary: "High geofence violation rate"
+          description: "Geofence violations occurring at {{ $value }} per second"
+
+      # Stream Client Disconnections
+      - alert: NoPoliceStreamClients
+        expr: stream_clients_connected == 0
+        for: 10m
+        labels:
+          severity: warning
+          service: mod-core
+        annotations:
+          summary: "No police monitoring clients connected"
+          description: "No police monitoring clients have been connected for 10 minutes"
+
+  - name: mod-core-info
+    interval: 60s
+    rules:
+      # System Health Recording
+      - record: mod_core:api_success_rate
+        expr: rate(api_requests_total{status_code!~"5.."}[5m]) / rate(api_requests_total[5m])
+
+      - record: mod_core:active_tourists
+        expr: tourists_total
+
+      - record: mod_core:total_active_alerts
+        expr: sum(active_alerts_total)
+
+      - record: mod_core:avg_safety_score
+        expr: avg(tourist_safety_score)
+
+  - name: system-health
+    interval: 30s
+    rules:
+      # System Memory Usage
+      - alert: HighMemoryUsage
+        expr: memory_usage_bytes{type="rss"} / (1024*1024*1024) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: mod-core
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}GB"
+
+      # System Uptime
+      - record: mod_core:uptime_hours
+        expr: system_uptime_seconds / 3600

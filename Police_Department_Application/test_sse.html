@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE Test - Police SEDI</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        .log { background: #f8f9fa; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; height: 300px; overflow-y: auto; border: 1px solid #ddd; }
+        .event { margin: 0.5rem 0; padding: 0.5rem; border-radius: 0.25rem; }
+        .event.connected { background: #d4edda; color: #155724; }
+        .event.acknowledged { background: #cce7ff; color: #004085; }
+        .event.error { background: #f8d7da; color: #721c24; }
+        .event.system { background: #fff3cd; color: #856404; }
+        button { margin: 0.5rem; padding: 0.5rem 1rem; border: none; border-radius: 0.25rem; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+    </style>
+</head>
+<body>
+    <h1>🚔 Police SEDI - SSE Test</h1>
+    
+    <div>
+        <button id="connectBtn" class="btn-primary" onclick="connectSSE()">Connect SSE</button>
+        <button id="disconnectBtn" class="btn-warning" onclick="disconnectSSE()">Disconnect</button>
+        <button class="btn-success" onclick="testBroadcast()">Test Broadcast</button>
+        <button class="btn-success" onclick="testIncidentACK()">Test Incident ACK</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <div>
+        <strong>Status:</strong> <span id="status">Disconnected</span> | 
+        <strong>Events:</strong> <span id="eventCount">0</span>
+    </div>
+    
+    <div id="eventLog" class="log">
+        <div>SSE event log will appear here...</div>
+    </div>
+
+    <script>
+        let eventSource = null;
+        let eventCount = 0;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('eventLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const eventDiv = document.createElement('div');
+            eventDiv.className = `event ${type}`;
+            eventDiv.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            logDiv.appendChild(eventDiv);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            
+            eventCount++;
+            document.getElementById('eventCount').textContent = eventCount;
+        }
+
+        function updateStatus(status, color = 'black') {
+            const statusSpan = document.getElementById('status');
+            statusSpan.textContent = status;
+            statusSpan.style.color = color;
+        }
+
+        function connectSSE() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            log('Connecting to SSE stream...', 'system');
+            updateStatus('Connecting...', 'orange');
+
+            eventSource = new EventSource('/api/v1/stream');
+
+            eventSource.onopen = function(event) {
+                log('✅ SSE connection established!', 'connected');
+                updateStatus('Connected', 'green');
+            };
+
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                log(`Message: ${JSON.stringify(data)}`, 'info');
+            };
+
+            eventSource.onerror = function(event) {
+                log('❌ SSE connection error', 'error');
+                updateStatus('Error', 'red');
+            };
+
+            // Specific event handlers
+            eventSource.addEventListener('connected', function(event) {
+                const data = JSON.parse(event.data);
+                log(`🔌 Connected: ${data.message}`, 'connected');
+            });
+
+            eventSource.addEventListener('heartbeat', function(event) {
+                log('💓 Heartbeat', 'system');
+            });
+
+            eventSource.addEventListener('incident_acknowledged', function(event) {
+                const data = JSON.parse(event.data);
+                log(`✅ Incident ACK: ${data.message}`, 'acknowledged');
+            });
+
+            eventSource.addEventListener('system_status', function(event) {
+                const data = JSON.parse(event.data);
+                log(`📢 System: ${data.message}`, 'system');
+            });
+
+            eventSource.addEventListener('error', function(event) {
+                const data = JSON.parse(event.data);
+                log(`❌ Error: ${data.message}`, 'error');
+            });
+        }
+
+        function disconnectSSE() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                log('🔌 Disconnected from SSE', 'system');
+                updateStatus('Disconnected', 'gray');
+            }
+        }
+
+        async function testBroadcast() {
+            try {
+                const response = await fetch('/api/v1/broadcast/test?message=' + encodeURIComponent('Test from SSE test page'), {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                log(`📡 Broadcast sent to ${result.recipients} clients`, 'system');
+            } catch (error) {
+                log(`❌ Broadcast failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testIncidentACK() {
+            try {
+                const response = await fetch('/api/v1/incidents/123457/ack', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        alert_id: 123457,
+                        tourist_id: 'b1d0b691-1234-5678-9abc-234567890123',
+                        note: 'Test ACK from SSE test page',
+                        officer_id: 'sse-test-user'
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    log(`✅ Test ACK sent for incident 123457`, 'system');
+                } else {
+                    log(`❌ ACK failed: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ ACK request failed: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '<div>SSE event log cleared...</div>';
+            eventCount = 0;
+            document.getElementById('eventCount').textContent = eventCount;
+        }
+
+        // Auto-connect on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚔 Police SEDI SSE Test Page Loaded', 'system');
+            connectSSE();
+        });
+    </script>
+</body>
+</html>

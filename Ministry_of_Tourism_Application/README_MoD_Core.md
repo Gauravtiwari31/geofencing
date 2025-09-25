@@ -1,4 +1,4 @@
-# Ministry of Defense Core Safety Backend (MoD Core) — PRD (MVP)
+# Ministry of Tourism Core Safety Backend (MoD Core) — PRD (MVP)
 
 ## 0) Purpose & Scope
 The **MoD Core** is the authoritative backend that:

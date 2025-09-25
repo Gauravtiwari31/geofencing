@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourist Mobile Simulator</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🗺️ Tourist Mobile Simulator</h1>
+            <div class="status-bar">
+                <div class="status-item" id="auth-status">
+                    <span class="status-icon">🔐</span>
+                    <span id="auth-text">Not Authenticated</span>
+                </div>
+                <div class="status-item" id="connection-status">
+                    <span class="status-icon">🌐</span>
+                    <span id="connection-text">Disconnected</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Map Container -->
+            <div class="map-section">
+                <div id="map" class="map-container"></div>
+                <div class="map-info">
+                    <div class="location-display">
+                        <strong>Current Location:</strong>
+                        <span id="current-coords">Click map to set location</span>
+                    </div>
+                    <div class="map-controls">
+                        <button id="reset-map-btn" class="map-control-btn">🇮🇳 View India</button>
+                        <button id="zoom-location-btn" class="map-control-btn" disabled>📍 Zoom to Location</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="controls-section">
+                <!-- SOS Controls -->
+                <div class="control-group sos-group">
+                    <h3>🚨 Emergency</h3>
+                    <button id="sos-btn" class="sos-button" disabled>
+                        <span class="sos-icon">🆘</span>
+                        <span class="sos-text">SOS</span>
+                    </button>
+                    <div class="sos-status" id="sos-status">SOS Ready</div>
+                </div>
+
+                <!-- Authentication Controls -->
+                <div class="control-group auth-group">
+                    <h3>🔐 Authentication</h3>
+                    <button id="login-btn" class="control-btn">Login with Keycloak</button>
+                    <button id="refresh-btn" class="control-btn" disabled>Refresh Token</button>
+                    <div class="user-info" id="user-info"></div>
+                </div>
+
+                <!-- Location Controls -->
+                <div class="control-group location-group">
+                    <h3>📍 Location</h3>
+                    <div class="input-group">
+                        <input type="number" id="lat-input" placeholder="Latitude" step="0.000001">
+                        <input type="number" id="lng-input" placeholder="Longitude" step="0.000001">
+                        <button id="set-location-btn" class="control-btn">Set Location</button>
+                    </div>
+                    <div class="preset-locations">
+                        <button class="preset-btn" data-lat="26.1625" data-lng="91.7794">Guwahati Center</button>
+                        <button class="preset-btn" data-lat="26.1580" data-lng="91.7720">Kamakhya Temple</button>
+                        <button class="preset-btn" data-lat="26.1600" data-lng="91.7750">Riverside</button>
+                    </div>
+                </div>
+
+                <!-- Simulation Controls -->
+                <div class="control-group simulation-group">
+                    <h3>🎯 Path Simulation</h3>
+                    <select id="path-select" class="control-select">
+                        <option value="">Select a path...</option>
+                    </select>
+                    <div class="simulation-controls">
+                        <button id="start-sim-btn" class="control-btn" disabled>Start Simulation</button>
+                        <button id="stop-sim-btn" class="control-btn" disabled>Stop Simulation</button>
+                    </div>
+                    <div class="simulation-status" id="sim-status">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="progress-text">No simulation running</div>
+                    </div>
+                </div>
+
+                <!-- Device Status -->
+                <div class="control-group device-group">
+                    <h3>📱 Device Status</h3>
+                    <div class="device-info">
+                        <div class="device-item">
+                            <span>Device ID:</span>
+                            <span id="device-id">tourist-sim-001</span>
+                        </div>
+                        <div class="device-item">
+                            <span>MQTT:</span>
+                            <span id="mqtt-status" class="status-indicator">Disconnected</span>
+                        </div>
+                        <div class="device-item">
+                            <span>Gateway:</span>
+                            <span id="gateway-status" class="status-indicator">Unknown</span>
+                        </div>
+                    </div>
+                    <button id="register-device-btn" class="control-btn" disabled>Register Device</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="activity-section">
+            <h3>📋 Activity Log</h3>
+            <div id="activity-log" class="activity-log">
+                <div class="log-entry">Welcome to Tourist Mobile Simulator</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/static/map.js"></script>
+    <script src="/static/sos.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
