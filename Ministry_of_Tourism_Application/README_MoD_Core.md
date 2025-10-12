@@ -67,8 +67,8 @@ Rate guidance: avg **1/min** per tourist; bursts allowed on SOS
 {
   "tourist_id": "b1d0b691-...-9a",
   "device_id": "9ce2-...-11",
-  "position": {"lat": 26.162, "lon": 91.779, "alt": 53.4, "speed_mps": 0.0, "ts": "2025-09-24T14:30:30Z"},
-  "health": {"heart_rate": 82, "fall_detected": false, "battery": 0.65},
+  "position": {"lat": 26.162, "lon": 91.779, "ts": "2025-09-24T14:30:30Z"},
+  "health": {"battery": 0.65},
   "sos": {"active": false},
   "app": {"build": "1.0.0", "platform": "android"},
   "idempotency_key": "6e54d8e8-2a..."

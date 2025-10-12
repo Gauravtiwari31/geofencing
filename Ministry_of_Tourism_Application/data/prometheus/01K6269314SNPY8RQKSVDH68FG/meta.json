@@ -1,0 +1,17 @@
+{
+	"ulid": "01K6269314SNPY8RQKSVDH68FG",
+	"minTime": 1758852001495,
+	"maxTime": 1758859200000,
+	"stats": {
+		"numSamples": 345840,
+		"numSeries": 847,
+		"numChunks": 2888
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01K6269314SNPY8RQKSVDH68FG"
+		]
+	},
+	"version": 1
+}

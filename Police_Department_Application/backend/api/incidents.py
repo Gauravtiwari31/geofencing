@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 import structlog
 
@@ -18,6 +18,7 @@ from models.schemas import (
     IncidentType, IncidentStatus, ScoreBand
 )
 from services.incident_service import IncidentService
+from services.fir_service import get_fir_file
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -65,9 +66,12 @@ async def list_incidents(
             IncidentSummary(
                 alert_id=incident.alert_id,
                 type=incident.type,
-                last_status=incident.last_status,
+            last_status=incident.last_status,
                 created_at=incident.created_at,
-                score_band=incident.score_band
+                score_band=incident.score_band,
+                tourist_id=incident.tourist_id,
+                location=incident.location,
+                fir_pdf_path=incident.fir_download_url(),
             )
             for incident in incidents
         ]
@@ -104,7 +108,10 @@ async def get_urgent_incidents(
                 type=incident.type,
                 last_status=incident.last_status,
                 created_at=incident.created_at,
-                score_band=incident.score_band
+                score_band=incident.score_band,
+                tourist_id=incident.tourist_id,
+                location=incident.location,
+                fir_pdf_path=incident.fir_download_url(),
             )
             for incident in urgent_incidents
         ]
@@ -149,7 +156,8 @@ async def get_incident(
             last_update_at=incident.last_update_at,
             location=incident.location,
             score_band=incident.score_band,
-            details=incident.details
+            details=incident.details,
+            fir_pdf_path=incident.fir_download_url(),
         )
         
         logger.info("Incident retrieved", alert_id=alert_id, type=incident.type)
@@ -303,7 +311,10 @@ async def get_dashboard_data(
                 type=incident.type,
                 last_status=incident.last_status,
                 created_at=incident.created_at,
-                score_band=incident.score_band
+                score_band=incident.score_band,
+                tourist_id=incident.tourist_id,
+                location=incident.location,
+                fir_pdf_path=incident.fir_download_url(),
             )
             for incident in recent_incidents
         ]
@@ -314,7 +325,10 @@ async def get_dashboard_data(
                 type=incident.type,
                 last_status=incident.last_status,
                 created_at=incident.created_at,
-                score_band=incident.score_band
+                score_band=incident.score_band,
+                tourist_id=incident.tourist_id,
+                location=incident.location,
+                fir_pdf_path=incident.fir_download_url(),
             )
             for incident in urgent_incidents
         ]
@@ -401,3 +415,21 @@ async def get_urgent_incidents(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve urgent incidents"
         )
+
+
+@router.get("/{alert_id}/fir")
+async def download_fir(alert_id: int, db: AsyncSession = Depends(get_db)):
+    """Download the generated FIR PDF for an incident."""
+    incident = await IncidentService.get_incident(db, alert_id)
+    if not incident or not incident.fir_pdf_path:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="FIR PDF not available")
+
+    absolute_path = get_fir_file(incident.fir_pdf_path)
+    if not absolute_path:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="FIR PDF file missing")
+
+    return FileResponse(
+        absolute_path,
+        media_type="application/pdf",
+        filename=f"fir_{incident.alert_id}.pdf"
+    )

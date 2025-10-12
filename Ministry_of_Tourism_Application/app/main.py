@@ -21,6 +21,7 @@ from app.services.metrics import setup_metrics, track_request
 from app.models.tourist import Tourist, Location
 from app.models.alert import Alert
 from sqlalchemy.orm import Session
+from geoalchemy2.shape import to_shape
 
 settings = get_settings()
 
@@ -91,13 +92,16 @@ app.add_middleware(
     allowed_hosts=["localhost", "127.0.0.1", "*"]  # Configure properly in production
 )
 
-# CORS middleware (restrictive in production)
+allowed_origins = ["http://localhost:2040", "http://127.0.0.1:2040"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://localhost", "https://127.0.0.1"] if not settings.debug else ["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    expose_headers=["X-Process-Time", "X-Version"],
+    max_age=86400
 )
 
 
@@ -240,53 +244,42 @@ async def get_live_tourists(db: Session = Depends(get_db)):
         tourist_data = []
         
         for tourist in tourists:
-            latest_location = db.query(Location).filter(
-                Location.tourist_id == tourist.id
-            ).order_by(Location.timestamp.desc()).first()
-            
-            if latest_location:
+            latest_location = (
+                db.query(Location)
+                .filter(Location.tourist_id == tourist.id)
+                .order_by(Location.recorded_at.desc())
+                .first()
+            )
+
+            if latest_location and latest_location.geom is not None:
+                point = to_shape(latest_location.geom)
+                emergency_contact = tourist.emergency_contact or {}
+                if isinstance(emergency_contact, dict):
+                    contact_name = emergency_contact.get("name")
+                    contact_nationality = emergency_contact.get("nationality")
+                else:
+                    contact_name = None
+                    contact_nationality = None
+
                 tourist_data.append({
-                    "id": tourist.id,
-                    "name": f"{tourist.first_name} {tourist.last_name}",
-                    "nationality": tourist.nationality,
+                    "id": str(tourist.id),
+                    "name": contact_name or f"Tourist {str(tourist.id)[:8]}",
+                    "nationality": contact_nationality or "Unknown",
                     "location": {
-                        "lat": float(latest_location.latitude),
-                        "lng": float(latest_location.longitude)
+                        "lat": float(point.y),
+                        "lng": float(point.x)
                     },
                     "status": determine_tourist_status(tourist, latest_location),
-                    "last_seen": latest_location.timestamp.isoformat(),
-                    "device_id": latest_location.device_id if hasattr(latest_location, 'device_id') else "Unknown",
+                    "last_seen": latest_location.recorded_at.isoformat(),
+                    "device_id": str(latest_location.device_id),
+                    "battery": (latest_location.location_metadata or {}).get("battery"),
                     "safety_score": calculate_safety_score(tourist, latest_location)
                 })
         
         return {"tourists": tourist_data}
     except Exception as e:
         logger.error(f"Error fetching live tourists: {e}")
-        # Return mock data for demo
-        return {
-            "tourists": [
-                {
-                    "id": 1,
-                    "name": "Priya Sharma",
-                    "nationality": "Indian",
-                    "location": {"lat": 28.6139, "lng": 77.2090},
-                    "status": "safe",
-                    "last_seen": datetime.now().isoformat(),
-                    "device_id": "DEV001",
-                    "safety_score": 85
-                },
-                {
-                    "id": 2,
-                    "name": "John Anderson", 
-                    "nationality": "American",
-                    "location": {"lat": 27.1750, "lng": 78.0422},
-                    "status": "safe",
-                    "last_seen": datetime.now().isoformat(),
-                    "device_id": "DEV002",
-                    "safety_score": 92
-                }
-            ]
-        }
+        raise HTTPException(status_code=500, detail="Failed to fetch live tourists")
 
 @app.get("/api/v1/alerts/active", tags=["Dashboard"])
 async def get_active_alerts(db: Session = Depends(get_db)):

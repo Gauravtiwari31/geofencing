@@ -167,7 +167,6 @@ async def get_police_snapshot(db: Session) -> Dict[str, Any]:
 @router.get("/stream")
 async def police_stream(
     request: Request,
-    user: PoliceUser,
     db: Session = Depends(get_db)
 ):
     """
@@ -212,7 +211,6 @@ async def police_stream(
 @router.post("/ack", response_model=PoliceAckResponse)
 async def acknowledge_alert(
     ack_request: PoliceAckRequest,
-    user: PoliceUser,
     db: Session = Depends(get_db)
 ):
     """

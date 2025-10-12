@@ -134,6 +134,10 @@ class Settings(BaseSettings):
         default="/workspace/frontend/dist",
         description="Directory containing built frontend files"
     )
+    fir_reports_directory: str = Field(
+        default="/workspace/generated_firs",
+        description="Directory where generated FIR PDF files are stored"
+    )
     
     model_config = {
         "env_file": "/workspace/config.env",

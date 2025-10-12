@@ -25,18 +25,15 @@ class IncidentService:
     """Service for incident-related database operations"""
 
     @staticmethod
-    async def create_incident(db: AsyncSession, incident_data: IncidentCreate) -> Incident:
+    async def create_incident(db: AsyncSession, incident_data: IncidentCreate, fir_pdf_path: Optional[str] = None) -> Incident:
         """Create a new incident"""
         try:
-            # Convert Pydantic model to dict, handling nested models
             incident_dict = incident_data.model_dump()
-            
-            # Handle location data conversion to JSON
             if incident_dict.get('location'):
-                # Location is already a dict from Pydantic
                 pass
-            
-            # Create incident
+            if fir_pdf_path:
+                incident_dict['fir_pdf_path'] = fir_pdf_path
+
             incident = Incident(**incident_dict)
             db.add(incident)
             await db.flush()

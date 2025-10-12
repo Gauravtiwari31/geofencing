@@ -227,78 +227,10 @@ class AlertEngine:
     ) -> Optional[Alert]:
         """
         Process health vitals alerts.
-        
-        Args:
-            db: Database session
-            tourist_id: Tourist ID
-            health_data: Health monitoring data
-            telemetry_data: Tourist telemetry data
-        
-        Returns:
-            Created Alert or None
         """
         try:
-            alerts_needed = []
-            
-            # Fall detection
-            if health_data.get("fall_detected", False):
-                alerts_needed.append({
-                    "type": "fall",
-                    "priority": "HIGH",
-                    "title": "Fall Detected",
-                    "description": "Device detected a fall event"
-                })
-            
-            # Heart rate anomalies
-            heart_rate = health_data.get("heart_rate")
-            if heart_rate:
-                if heart_rate > 140:
-                    alerts_needed.append({
-                        "type": "high_hr",
-                        "priority": "MEDIUM",
-                        "title": "High Heart Rate",
-                        "description": f"Heart rate elevated to {heart_rate} BPM"
-                    })
-                elif heart_rate < 45:
-                    alerts_needed.append({
-                        "type": "low_hr",
-                        "priority": "MEDIUM",
-                        "title": "Low Heart Rate",
-                        "description": f"Heart rate dropped to {heart_rate} BPM"
-                    })
-            
-            # Process the most severe alert
-            if alerts_needed:
-                most_severe = max(alerts_needed, key=lambda x: {
-                    "HIGH": 3, "MEDIUM": 2, "LOW": 1
-                }[x["priority"]])
-                
-                position = telemetry_data.get("position", {})
-                
-                payload = {
-                    "vitals_type": most_severe["type"],
-                    "heart_rate": heart_rate,
-                    "fall_detected": health_data.get("fall_detected", False),
-                    "detection_time": position.get("ts"),
-                    "all_anomalies": [a["type"] for a in alerts_needed]
-                }
-                
-                alert = AlertEngine.create_alert(
-                    db=db,
-                    tourist_id=tourist_id,
-                    alert_type="VITALS",
-                    priority=most_severe["priority"],
-                    title=most_severe["title"],
-                    description=most_severe["description"],
-                    payload=payload,
-                    location_lat=str(position.get("lat", "")),
-                    location_lon=str(position.get("lon", ""))
-                )
-                
-                return alert
-            
+            # Vitals monitoring removed per updated requirements
             return None
-            
         except Exception as e:
             logger.error(f"Error processing vitals alert: {str(e)}")
             return None

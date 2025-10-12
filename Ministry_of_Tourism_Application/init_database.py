@@ -107,12 +107,9 @@ def init_database():
             device_id=sample_device.id,
             recorded_at=datetime.utcnow(),
             geom="POINT(91.779 26.162)",  # Near but outside restricted area
-            speed_mps=1.2,
-            altitude=53.4,
             location_metadata={
-                "heart_rate": 75,
                 "battery": 0.85,
-                "temperature": 25.5
+                "app_build": "1.0.0"
             }
         )
         db.add(sample_location)

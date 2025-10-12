@@ -588,18 +588,18 @@
                 const icon = getTouristIcon(tourist.status);
                 const marker = L.marker([tourist.location.lat, tourist.location.lng], { icon: icon }).addTo(map);
                 
-                marker.bindPopup(`
-                    <div class="text-dark">
+                marker.bindPopup(
+                    `<div class="text-dark">
                         <h4 class="font-bold">${tourist.name}</h4>
                         <p><strong>Nationality:</strong> ${tourist.nationality}</p>
                         <p><strong>Status:</strong> <span class="status-${tourist.status}">${tourist.status.toUpperCase()}</span></p>
                         <p><strong>Safety Score:</strong> ${tourist.safety_score}%</p>
                         <p><strong>Last Seen:</strong> ${new Date(tourist.last_seen).toLocaleTimeString()}</p>
-                        <button onclick="triggerPoliceAction(${tourist.id})" class="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
+                        <button onclick="triggerPoliceAction('${tourist.id}')" class="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
                             🚔 Police Action
                         </button>
-                    </div>
-                `);
+                    </div>`
+                );
             });
         }
         
@@ -658,7 +658,7 @@
                         <div class="text-xs status-${tourist.status} font-medium">${tourist.status.toUpperCase()}</div>
                     </div>
                     <div class="flex flex-col items-end space-y-1">
-                        <button onclick="triggerPoliceAction(${tourist.id})" 
+                        <button onclick="triggerPoliceAction('${tourist.id}')" 
                                 class="btn-police-action text-white text-xs px-2 py-1 rounded">
                             🚔 Action
                         </button>

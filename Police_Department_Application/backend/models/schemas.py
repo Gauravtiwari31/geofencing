@@ -65,6 +65,7 @@ class IncidentBase(BaseModel):
     location: Optional[LocationData] = Field(None, description="Location information")
     score_band: Optional[ScoreBand] = Field(None, description="Risk/urgency score band")
     details: Optional[str] = Field(None, description="Additional incident details")
+    fir_pdf_path: Optional[str] = Field(None, description="Path to generated FIR PDF")
 
 
 class IncidentCreate(IncidentBase):
@@ -79,6 +80,7 @@ class IncidentUpdate(BaseModel):
     location: Optional[LocationData] = Field(None, description="Updated location")
     score_band: Optional[ScoreBand] = Field(None, description="Updated score band")
     details: Optional[str] = Field(None, description="Updated details")
+    fir_pdf_path: Optional[str] = Field(None, description="Generated FIR PDF path")
 
 
 class IncidentResponse(IncidentBase):
@@ -98,6 +100,9 @@ class IncidentSummary(BaseModel):
     last_status: IncidentStatus
     created_at: datetime
     score_band: Optional[ScoreBand] = None
+    tourist_id: Optional[str] = None
+    location: Optional[LocationData] = None
+    fir_pdf_path: Optional[str] = None
     
     model_config = ConfigDict(from_attributes=True)
 

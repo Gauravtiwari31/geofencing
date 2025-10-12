@@ -17,7 +17,7 @@ def calculate_safety_score(tourist_data: Dict[str, Any]) -> int:
         tourist_data: Dictionary containing:
             - in_red_zone: bool
             - red_zone_distance_m: float or None
-            - health: dict with heart_rate, fall_detected, battery
+            - battery: float or None
             - sos: dict with active flag
             - violations: list of geofence violations
     
@@ -47,35 +47,18 @@ def calculate_safety_score(tourist_data: Dict[str, Any]) -> int:
             base_score -= distance_penalty
             logger.info(f"Near red zone ({red_zone_distance}m) - penalty: {distance_penalty:.1f}")
         
-        # Health indicators
-        health_data = tourist_data.get("health", {})
-        
-        # Heart rate anomalies
-        heart_rate = health_data.get("heart_rate")
-        if heart_rate is not None:
-            if heart_rate > 120 or heart_rate < 50:
+        # Battery level (optional)
+        battery = tourist_data.get("battery")
+        if battery is not None:
+            if battery < 0.1:
+                base_score -= 20
+                logger.warning(f"Critical battery ({battery*100:.1f}%) - penalty: 20")
+            elif battery < 0.2:
                 base_score -= 15
-                logger.info(f"Abnormal heart rate ({heart_rate}) - penalty: 15")
-            elif heart_rate > 100 or heart_rate < 60:
+                logger.info(f"Low battery ({battery*100:.1f}%) - penalty: 15")
+            elif battery < 0.3:
                 base_score -= 5
-                logger.info(f"Elevated heart rate ({heart_rate}) - penalty: 5")
-        
-        # Fall detection
-        if health_data.get("fall_detected", False):
-            base_score -= 25
-            logger.warning("Fall detected - penalty: 25")
-        
-        # Battery level
-        battery = health_data.get("battery", 1.0)
-        if battery < 0.1:
-            base_score -= 20
-            logger.warning(f"Critical battery ({battery*100:.1f}%) - penalty: 20")
-        elif battery < 0.2:
-            base_score -= 15
-            logger.info(f"Low battery ({battery*100:.1f}%) - penalty: 15")
-        elif battery < 0.3:
-            base_score -= 5
-            logger.info(f"Medium battery ({battery*100:.1f}%) - penalty: 5")
+                logger.info(f"Medium battery ({battery*100:.1f}%) - penalty: 5")
         
         # Geofence violations
         violations = tourist_data.get("violations", [])
@@ -165,27 +148,12 @@ def get_safety_recommendations(tourist_data: Dict[str, Any], score: int) -> List
         elif red_zone_distance is not None and red_zone_distance < 500:
             recommendations.append("Approaching restricted area - be aware of your surroundings")
         
-        # Health recommendations
-        health_data = tourist_data.get("health", {})
-        
-        if health_data.get("fall_detected", False):
-            recommendations.extend([
-                "Fall detected - check for injuries",
-                "If you need help, activate SOS immediately"
-            ])
-        
-        heart_rate = health_data.get("heart_rate")
-        if heart_rate and heart_rate > 120:
-            recommendations.extend([
-                "High heart rate detected - take a rest",
-                "Find shade and hydrate if possible"
-            ])
-        
-        battery = health_data.get("battery", 1.0)
-        if battery < 0.2:
-            recommendations.append("Device battery critical - charge immediately")
-        elif battery < 0.4:
-            recommendations.append("Device battery low - find charging option soon")
+        battery = tourist_data.get("battery")
+        if battery is not None:
+            if battery < 0.2:
+                recommendations.append("Device battery critical - charge immediately")
+            elif battery < 0.4:
+                recommendations.append("Device battery low - find charging option soon")
         
         # Score-based recommendations
         if score < 50:
@@ -242,27 +210,14 @@ def calculate_risk_factors(tourist_data: Dict[str, Any]) -> Dict[str, Any]:
         if red_zone_distance is not None and red_zone_distance < 500:
             risk_factors["location_risk"] += (500 - red_zone_distance) / 500 * 30
         
-        # Health risk
-        health_data = tourist_data.get("health", {})
-        
-        if health_data.get("fall_detected", False):
-            risk_factors["health_risk"] += 25
-        
-        heart_rate = health_data.get("heart_rate")
-        if heart_rate:
-            if heart_rate > 120 or heart_rate < 50:
-                risk_factors["health_risk"] += 15
-            elif heart_rate > 100 or heart_rate < 60:
-                risk_factors["health_risk"] += 5
-        
-        # Device risk
-        battery = health_data.get("battery", 1.0)
-        if battery < 0.1:
-            risk_factors["device_risk"] += 20
-        elif battery < 0.2:
-            risk_factors["device_risk"] += 15
-        elif battery < 0.3:
-            risk_factors["device_risk"] += 5
+        battery = tourist_data.get("battery")
+        if battery is not None:
+            if battery < 0.1:
+                risk_factors["device_risk"] += 20
+            elif battery < 0.2:
+                risk_factors["device_risk"] += 15
+            elif battery < 0.3:
+                risk_factors["device_risk"] += 5
         
         # Calculate total risk
         risk_factors["total_risk"] = sum([

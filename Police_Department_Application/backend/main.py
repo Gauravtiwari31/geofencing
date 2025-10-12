@@ -110,12 +110,10 @@ app.add_middleware(
 app.include_router(health_router, tags=["System"])
 
 # Import and include all API routers
-from api.auth import router as auth_router
 from api.incidents import router as incidents_router
 from api.settings import router as settings_router
 from api.stream import router as stream_router
 
-app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 app.include_router(incidents_router, prefix="/api/v1/incidents", tags=["Incidents"])
 app.include_router(settings_router, prefix="/api/v1/settings", tags=["Settings"])
 app.include_router(stream_router, prefix="/api/v1", tags=["Real-time"])
@@ -133,8 +131,9 @@ async def serve_frontend():
         index_file = static_dir / "index.html"
         
         if index_file.exists():
-            # Serve built React app
-            return HTMLResponse(content=index_file.read_text(), status_code=200)
+            response = HTMLResponse(content=index_file.read_text(), status_code=200)
+            response.headers["Cache-Control"] = "no-store"
+            return response
         else:
             # Development landing page
             return HTMLResponse(content=f"""

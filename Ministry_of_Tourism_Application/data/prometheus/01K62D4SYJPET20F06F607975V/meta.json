@@ -1,0 +1,17 @@
+{
+	"ulid": "01K62D4SYJPET20F06F607975V",
+	"minTime": 1758859201206,
+	"maxTime": 1758866400000,
+	"stats": {
+		"numSamples": 356659,
+		"numSeries": 1124,
+		"numChunks": 3054
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01K62D4SYJPET20F06F607975V"
+		]
+	},
+	"version": 1
+}

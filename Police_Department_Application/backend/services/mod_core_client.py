@@ -5,7 +5,7 @@ Handles secure Server-Sent Events (SSE) stream consumption and acknowledgements
 
 import asyncio
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
@@ -22,6 +22,7 @@ from models.schemas import (
 )
 from models.database import AsyncSessionLocal
 from services.sse_service import incident_broadcaster
+from services.fir_service import generate_fir_pdf
 
 
 logger = structlog.get_logger()
@@ -327,7 +328,14 @@ class MoDCoreClient:
                 score_band=score_band,
                 details=details,
             )
-            incident = await IncidentService.create_incident(session, incident_data)
+            fir_file = None
+            if incident_data.location:
+                try:
+                    fir_file = generate_fir_pdf(incident_data.model_dump())
+                except Exception as exc:
+                    logger.warning("Failed to generate FIR PDF", error=str(exc))
+
+            incident = await IncidentService.create_incident(session, incident_data, fir_pdf_path=fir_file)
             if alert_status != IncidentStatus.ACTIVE:
                 await IncidentService.update_incident(
                     session,
@@ -337,11 +345,30 @@ class MoDCoreClient:
                 incident = await IncidentService.get_incident(session, alert_id)
             created_incidents.append(incident.to_dict())
         else:
+            fir_file = existing.fir_pdf_path
+            if not fir_file and location:
+                try:
+                    fir_file = generate_fir_pdf(
+                        {
+                            "alert_id": alert_id,
+                            "tourist_id": tourist_id,
+                            "type": alert_type.value,
+                            "created_at": created_at,
+                            "last_status": alert_status.value,
+                            "location": location.model_dump() if location else None,
+                            "score_band": score_band.value if score_band else None,
+                            "details": details,
+                        }
+                    )
+                except Exception as exc:
+                    logger.warning("Failed to generate FIR PDF", error=str(exc))
+
             incident_update = IncidentUpdate(
                 last_status=alert_status,
                 location=location,
                 score_band=score_band,
                 details=details,
+                fir_pdf_path=fir_file,
             )
             changes: Dict[str, Any] = {}
             if location and existing.location != location.model_dump():
@@ -427,6 +454,22 @@ class MoDCoreClient:
     def health_status(self) -> Dict[str, Any]:
         return dict(self._status)
 
+    def _map_incident_for_frontend(self, incident) -> Dict[str, Any]:
+        """Convert ORM incident to dict with map-friendly location."""
+        data = incident.to_dict()
+        location = data.get("location")
+        if location and isinstance(location, dict):
+            try:
+                data["location"] = {
+                    "lat": float(location.get("lat")),
+                    "lng": float(location.get("lng")),
+                    "accuracy": location.get("accuracy"),
+                }
+            except Exception:
+                data["location"] = None
+        return data
+
 
 mod_core_client = MoDCoreClient()
+
 

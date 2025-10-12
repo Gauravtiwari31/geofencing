@@ -4,8 +4,9 @@ Geofencing service for tourist safety monitoring
 import logging
 from typing import List, Dict, Any, Optional, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import text
-from geoalchemy2.functions import ST_Distance, ST_GeomFromText, ST_Within, ST_DWithin
+from sqlalchemy import text, cast
+from geoalchemy2 import Geometry
+from geoalchemy2.functions import ST_Distance, ST_GeomFromText, ST_Within, ST_Contains
 
 from app.models.geofence import Geofence, GeofenceEvent
 from app.models.tourist import Tourist
@@ -40,7 +41,10 @@ def check_geofence_violations(
         # Query for geofences that contain this point
         violating_fences = db.query(Geofence).filter(
             Geofence.active == True,
-            ST_Within(ST_GeomFromText(point_wkt, 4326), Geofence.geom)
+            ST_Within(
+                ST_GeomFromText(point_wkt, 4326),
+                cast(Geofence.geom, Geometry("POLYGON", 4326))
+            )
         ).all()
         
         for fence in violating_fences:
@@ -92,10 +96,12 @@ def get_nearest_red_zone_distance(
         point_wkt = f"POINT({longitude} {latitude})"
         
         # First check if we're inside any red zone
+        point_geom = ST_GeomFromText(point_wkt, 4326)
+
         inside_red_zone = db.query(Geofence).filter(
             Geofence.active == True,
             Geofence.zone_type == "red_zone",
-            ST_Within(ST_GeomFromText(point_wkt, 4326), Geofence.geom)
+            ST_Contains(cast(Geofence.geom, Geometry("POLYGON", 4326)), point_geom)
         ).first()
         
         if inside_red_zone:
@@ -104,13 +110,13 @@ def get_nearest_red_zone_distance(
         # Find nearest red zone
         result = db.execute(text("""
             SELECT ST_Distance(
-                ST_Transform(geom, 3857),
+                ST_Transform(geom::geometry, 3857),
                 ST_Transform(ST_GeomFromText(:point, 4326), 3857)
             ) as distance
             FROM geofences 
             WHERE active = true AND zone_type = 'red_zone'
             ORDER BY ST_Distance(
-                ST_Transform(geom, 3857),
+                ST_Transform(geom::geometry, 3857),
                 ST_Transform(ST_GeomFromText(:point, 4326), 3857)
             )
             LIMIT 1
@@ -152,21 +158,18 @@ def get_nearby_geofences(
             SELECT 
                 id, name, zone_type, severity, description,
                 ST_Distance(
-                    ST_Transform(geom, 3857),
+                    ST_Transform(geom::geometry, 3857),
                     ST_Transform(ST_GeomFromText(:point, 4326), 3857)
                 ) as distance
             FROM geofences 
             WHERE active = true 
-            AND ST_DWithin(
-                ST_Transform(geom, 3857),
-                ST_Transform(ST_GeomFromText(:point, 4326), 3857),
-                :radius
-            )
+              AND ST_DWithin(
+                    geom::geography,
+                    ST_GeogFromText(:point),
+                    :radius
+              )
             ORDER BY distance
-        """), {
-            "point": point_wkt,
-            "radius": radius_meters
-        }).fetchall()
+        """), {"point": point_wkt, "radius": radius_meters}).fetchall()
         
         geofences = []
         for row in result:
@@ -329,7 +332,6 @@ def validate_tourist_movement(
         "valid": True,
         "anomalies": [],
         "distance_m": 0,
-        "speed_mps": 0,
         "warnings": []
     }
     
@@ -349,27 +351,9 @@ def validate_tourist_movement(
             distance_m = float(result[0])
             validation["distance_m"] = distance_m
             
-            # Calculate speed
             if time_diff_seconds > 0:
-                speed_mps = distance_m / time_diff_seconds
-                validation["speed_mps"] = speed_mps
-                
-                # Check for impossible speeds (>50 m/s = ~180 km/h)
-                if speed_mps > 50:
-                    validation["valid"] = False
-                    validation["anomalies"].append("impossible_speed")
-                    logger.warning(
-                        f"Impossible speed detected for tourist {tourist_id}: "
-                        f"{speed_mps:.1f} m/s"
-                    )
-                
-                # Check for high speed warnings (>25 m/s = ~90 km/h)
-                elif speed_mps > 25:
-                    validation["warnings"].append("high_speed")
-                    logger.info(
-                        f"High speed detected for tourist {tourist_id}: "
-                        f"{speed_mps:.1f} m/s"
-                    )
+                # Speed estimation removed as it is no longer part of the plan
+                pass
         
         # Check for geofence jumping (entering restricted area without passing through border)
         violations_prev = check_geofence_violations(db, previous_lat, previous_lon)

@@ -75,13 +75,9 @@ curl -H "Authorization: Bearer $TOURIST_TOKEN" \
        "position": {
          "lat": 26.162,
          "lon": 91.779,
-         "alt": 53.4,
-         "speed_mps": 0.0,
          "ts": "2025-09-25T10:30:00Z"
        },
        "health": {
-         "heart_rate": 82,
-         "fall_detected": false,
          "battery": 0.75
        },
        "sos": {

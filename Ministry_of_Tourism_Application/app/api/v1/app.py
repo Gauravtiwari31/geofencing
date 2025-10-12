@@ -27,15 +27,11 @@ router = APIRouter()
 class PositionData(BaseModel):
     lat: float = Field(..., ge=-90, le=90)
     lon: float = Field(..., ge=-180, le=180)
-    alt: Optional[float] = None
-    speed_mps: Optional[float] = Field(None, ge=0)
     ts: datetime
 
 
 class HealthData(BaseModel):
-    heart_rate: Optional[int] = Field(None, ge=30, le=250)
-    fall_detected: bool = False
-    battery: float = Field(..., ge=0, le=1)
+    battery: Optional[float] = Field(None, ge=0, le=1)
 
 
 class SOSData(BaseModel):
@@ -96,7 +92,6 @@ def check_idempotency(key: str) -> bool:
 async def ingest_telemetry(
     telemetry: TelemetryRequest,
     background_tasks: BackgroundTasks,
-    user: TouristUser,
     idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
     db: Session = Depends(get_db)
 ):
@@ -111,10 +106,6 @@ async def ingest_telemetry(
         if idempotency_key and check_idempotency(idempotency_key):
             logger.warning(f"Duplicate request with key: {idempotency_key}")
             raise HTTPException(status_code=409, detail="Request already processed")
-        
-        # Verify tourist access
-        if user.tourist_id != telemetry.tourist_id:
-            raise HTTPException(status_code=403, detail="Access denied to tourist data")
         
         # Get or create tourist
         tourist = db.query(Tourist).filter(Tourist.id == telemetry.tourist_id).first()
@@ -143,19 +134,18 @@ async def ingest_telemetry(
         
         # Create location record
         location_point = f"POINT({telemetry.position.lon} {telemetry.position.lat})"
+        location_metadata = {
+            "app_build": telemetry.app.build
+        }
+        if telemetry.health.battery is not None:
+            location_metadata["battery"] = telemetry.health.battery
+
         location = Location(
             tourist_id=telemetry.tourist_id,
             device_id=device.id,
             recorded_at=telemetry.position.ts,
             geom=location_point,
-            speed_mps=telemetry.position.speed_mps,
-            altitude=telemetry.position.alt,
-            location_metadata={
-                "heart_rate": telemetry.health.heart_rate,
-                "fall_detected": telemetry.health.fall_detected,
-                "battery": telemetry.health.battery,
-                "app_build": telemetry.app.build
-            }
+            location_metadata=location_metadata
         )
         db.add(location)
         db.commit()
@@ -176,7 +166,7 @@ async def ingest_telemetry(
         safety_data = {
             "in_red_zone": in_red_zone,
             "red_zone_distance_m": red_zone_distance,
-            "health": telemetry.health.dict(),
+            "battery": telemetry.health.battery,
             "sos": telemetry.sos.dict(),
             "violations": violations
         }
@@ -185,12 +175,10 @@ async def ingest_telemetry(
         
         # Generate advisories
         advisories = []
-        if red_zone_distance and red_zone_distance < 500:
+        if red_zone_distance is not None and red_zone_distance < 500:
             advisories.append("You are approaching a restricted area. Please maintain safe distance.")
-        if telemetry.health.battery < 0.2:
+        if telemetry.health.battery is not None and telemetry.health.battery < 0.2:
             advisories.append("Device battery is low. Please charge soon.")
-        if telemetry.health.heart_rate and telemetry.health.heart_rate > 100:
-            advisories.append("Elevated heart rate detected. Take rest if needed.")
         
         # Process alerts in background
         background_tasks.add_task(
@@ -237,7 +225,6 @@ async def ingest_telemetry(
 async def get_fences_summary(
     lat: float,
     lon: float,
-    user: TouristUser,
     db: Session = Depends(get_db)
 ):
     """
@@ -278,7 +265,7 @@ async def get_fences_summary(
 
 @router.get("/messages", response_model=MessageResponse)
 async def get_messages(
-    user: TouristUser,
+    tourist_id: str,
     db: Session = Depends(get_db)
 ):
     """
@@ -287,13 +274,13 @@ async def get_messages(
     """
     try:
         # Get tourist-specific messages
-        tourist = db.query(Tourist).filter(Tourist.id == user.tourist_id).first()
+        tourist = db.query(Tourist).filter(Tourist.id == tourist_id).first()
         if not tourist:
             raise HTTPException(status_code=404, detail="Tourist not found")
         
         # Get recent alerts for context
         recent_alerts = db.query(Alert).filter(
-            Alert.tourist_id == user.tourist_id,
+            Alert.tourist_id == tourist_id,
             Alert.status.in_(["NEW", "ACK"])
         ).limit(5).all()
         
@@ -313,7 +300,7 @@ async def get_messages(
         
         # Add low battery warning if needed
         recent_location = db.query(Location).filter(
-            Location.tourist_id == user.tourist_id
+            Location.tourist_id == tourist_id
         ).order_by(Location.recorded_at.desc()).first()
         
         if recent_location and recent_location.location_metadata:

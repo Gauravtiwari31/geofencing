@@ -39,6 +39,7 @@ class Incident(Base):
     location = Column(JSONB, nullable=True)  # {"lat": float, "lng": float, "accuracy": int}
     score_band = Column(String(20), nullable=True)
     details = Column(Text, nullable=True)
+    fir_pdf_path = Column(Text, nullable=True)
 
     # Relationships
     actions = relationship("Action", back_populates="incident", cascade="all, delete-orphan")
@@ -55,6 +56,7 @@ class Incident(Base):
 
     def to_dict(self):
         """Convert model to dictionary for API responses"""
+        fir_url = self.fir_download_url()
         return {
             "alert_id": self.alert_id,
             "tourist_id": self.tourist_id,
@@ -64,8 +66,15 @@ class Incident(Base):
             "last_update_at": self.last_update_at.isoformat() if self.last_update_at else None,
             "location": self.location,
             "score_band": self.score_band,
-            "details": self.details
+            "details": self.details,
+            "fir_pdf_path": fir_url,
         }
+
+    def fir_download_url(self) -> Optional[str]:
+        """Return API URL for downloading the FIR PDF if available"""
+        if not self.fir_pdf_path:
+            return None
+        return f"/api/v1/incidents/{self.alert_id}/fir"
 
     @property
     def is_active(self) -> bool:

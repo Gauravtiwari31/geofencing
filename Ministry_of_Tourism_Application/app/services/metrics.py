@@ -43,13 +43,6 @@ sos_incidents_24h = Gauge(
     registry=registry
 )
 
-response_time_sos_to_ack = Histogram(
-    'sos_response_time_seconds',
-    'Time from SOS trigger to police acknowledgment',
-    buckets=[1, 2, 5, 10, 30, 60, 120, 300],
-    registry=registry
-)
-
 # Database Metrics
 database_connections_active = Gauge(
     'database_connections_active',
@@ -79,19 +72,6 @@ near_red_zone_total = Gauge(
 )
 
 # Device Metrics
-devices_battery_low_total = Gauge(
-    'devices_battery_low_total',
-    'Number of devices with low battery (<20%)',
-    registry=registry
-)
-
-devices_last_seen = Histogram(
-    'devices_last_seen_minutes',
-    'Minutes since device last seen',
-    buckets=[1, 5, 10, 30, 60, 120, 300],
-    registry=registry
-)
-
 # Police Stream Metrics
 stream_clients_connected = Gauge(
     'stream_clients_connected',
@@ -195,9 +175,6 @@ def track_geofence_hit(geofence_type: str, severity: int):
     ).inc()
 
 
-def track_sos_response_time(response_time_seconds: float):
-    """Track SOS response time."""
-    response_time_sos_to_ack.observe(response_time_seconds)
 
 
 def track_stream_event(event_type: str):
@@ -214,10 +191,6 @@ def update_active_alerts(alert_type: str, count: int):
     """Update active alerts count by type."""
     active_alerts.labels(alert_type=alert_type).set(count)
 
-
-def update_battery_low_count(count: int):
-    """Update low battery device count."""
-    devices_battery_low_total.set(count)
 
 
 def update_near_red_zone_count(count: int):

@@ -21,6 +21,9 @@ aiofiles==23.2.0
 # Server-Sent Events
 sse-starlette==1.6.5
 
+# PDF generation
+reportlab==4.2.4
+
 # Configuration
 pydantic-settings==2.0.3
 python-dotenv==1.0.0
